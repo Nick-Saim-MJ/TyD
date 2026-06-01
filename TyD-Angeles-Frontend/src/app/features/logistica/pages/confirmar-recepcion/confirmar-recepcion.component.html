@@ -1,0 +1,258 @@
+<div class="page">
+
+  <button class="btn-back" (click)="volver()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+    </svg>
+    Volver a Pendientes
+  </button>
+
+  <!-- ✅ Loading -->
+  @if (store.cargandoDetalle()) {
+    <div class="loading-center">
+      <div class="spinner-lg"></div>
+      <p>Cargando despacho...</p>
+    </div>
+  }
+
+  <!-- ✅ Angular 19: @else if no soporta 'as'. Usamos un @if separado con alias. -->
+  <!-- La sintaxis "; as d" hace type narrowing automáticamente, eliminando TS18047 -->
+  @if (store.despachoActual(); as d) {
+
+    <!-- ══ INFO DEL DESPACHO ════════════════════════════════════════════ -->
+    <div class="despacho-info-card">
+      <div class="info-top">
+        <div class="info-left">
+          <h1 class="despacho-titulo">
+            Confirmar Recepción — Despacho #{{ d.id }}
+          </h1>
+          <div class="ruta-inline">
+            <span class="ruta-origen">{{ d.sucursalOrigenNombre }}</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+            </svg>
+            <span class="ruta-destino">{{ d.sucursalDestinoNombre }}</span>
+            @if (d.esInterZona) {
+              <span class="badge-interzona">↔ Inter-zona</span>
+            }
+          </div>
+        </div>
+        <div class="info-meta">
+          <div class="meta-chip">
+            <span class="meta-chip-label">Enviado por</span>
+            <span class="meta-chip-valor">{{ d.usuarioEnviaNombre }}</span>
+          </div>
+          <div class="meta-chip">
+            <span class="meta-chip-label">Fecha despacho</span>
+            <span class="meta-chip-valor">{{ d.fechaDespacho | fechaLocal:'fecha-hora' }}</span>
+          </div>
+          @if (d.guiaRemision) {
+            <div class="meta-chip">
+              <span class="meta-chip-label">Guía remisión</span>
+              <span class="meta-chip-valor guia">{{ d.guiaRemision }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Alerta si ya fue recibido -->
+      @if (d.estado !== 'EN_TRANSITO') {
+        <div class="alert-ya-recibido">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75
+                0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+          </svg>
+          Este despacho ya fue procesado. Estado actual:
+          <app-estado-badge [estado]="d.estado" />
+        </div>
+      }
+    </div>
+
+    <!-- ══ RESUMEN + ACCIONES RÁPIDAS ══════════════════════════════════ -->
+    <div class="resumen-bar">
+      <div class="resumen-chips">
+        <div class="resumen-chip resumen-chip--total">
+          <span class="chip-num">{{ resumen().total }}</span>
+          <span class="chip-label">Total</span>
+        </div>
+        <div class="resumen-chip resumen-chip--ok">
+          <span class="chip-num">{{ resumen().ok }}</span>
+          <span class="chip-label">OK</span>
+        </div>
+        <div class="resumen-chip resumen-chip--defecto">
+          <span class="chip-num">{{ resumen().defectuoso }}</span>
+          <span class="chip-label">Defecto</span>
+        </div>
+        <div class="resumen-chip resumen-chip--nore">
+          <span class="chip-num">{{ resumen().noRecibido }}</span>
+          <span class="chip-label">No rec.</span>
+        </div>
+        @if (resumen().sinDecision > 0) {
+          <div class="resumen-chip resumen-chip--pendiente">
+            <span class="chip-num">{{ resumen().sinDecision }}</span>
+            <span class="chip-label">Sin decidir</span>
+          </div>
+        }
+      </div>
+      @if (d.estado === 'EN_TRANSITO') {
+        <button class="btn-marcar-todos" (click)="marcarTodosOk()"
+                [disabled]="todoDecidido()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Marcar restantes como OK
+        </button>
+      }
+    </div>
+
+    <!-- ══ LISTA DE KITS ════════════════════════════════════════════════ -->
+    <div class="kits-card">
+      <ul class="kits-list">
+        @for (kit of confirmaciones(); track trackById($index, kit); let i = $index) {
+          <li class="kit-item" [attr.data-estado]="kit.estadoElegido">
+
+            <!-- Número y seriales -->
+            <div class="kit-header">
+              <span class="kit-num">{{ i + 1 }}</span>
+              <div class="kit-seriales">
+                <span class="serial serial--maestro">{{ kit.serieMaestro }}</span>
+                <span class="serial serial--sim">{{ kit.serieSim }}</span>
+                @if (kit.serieDeco) {
+                  <span class="serial serial--deco">{{ kit.serieDeco }}</span>
+                }
+              </div>
+              <span class="kit-producto">{{ kit.productoNombre }}</span>
+            </div>
+
+            <!-- Botones de decisión -->
+            @if (d.estado === 'EN_TRANSITO') {
+              <div class="decision-btns">
+                <button
+                  class="dec-btn dec-btn--ok"
+                  [class.selected]="kit.estadoElegido === 'RECIBIDO_OK'"
+                  (click)="setEstado(kit.itemKitId, 'RECIBIDO_OK')"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                  </svg>
+                  OK
+                </button>
+
+                <button
+                  class="dec-btn dec-btn--defecto"
+                  [class.selected]="kit.estadoElegido === 'RECIBIDO_DEFECTUOSO'"
+                  (click)="setEstado(kit.itemKitId, 'RECIBIDO_DEFECTUOSO')"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+                  </svg>
+                  Defectuoso
+                </button>
+
+                <button
+                  class="dec-btn dec-btn--nore"
+                  [class.selected]="kit.estadoElegido === 'NO_RECIBIDO'"
+                  (click)="setEstado(kit.itemKitId, 'NO_RECIBIDO')"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                  No recibido
+                </button>
+
+                <!-- Botón para abrir campo de observación -->
+                <button
+                  class="dec-btn dec-btn--obs"
+                  [class.active]="kit.observacionAbierta"
+                  (click)="toggleObservacion(kit.itemKitId)"
+                  title="Agregar observación"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227
+                        1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14
+                        1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626
+                        2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0
+                        0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Campo de observación expandible -->
+              @if (kit.observacionAbierta) {
+                <div class="observacion-field">
+                  <textarea
+                    class="obs-textarea"
+                    rows="2"
+                    placeholder="Describe el defecto o motivo de no recepción..."
+                    [value]="kit.observacion"
+                    (input)="setObservacion(kit.itemKitId, $any($event.target).value)"
+                  ></textarea>
+                </div>
+              }
+            } @else {
+              <!-- Modo solo lectura si el despacho ya fue confirmado -->
+              <div class="readonly-estado">
+                <app-estado-badge [estado]="kit.estadoAnterior" />
+                @if (kit.observacion) {
+                  <span class="readonly-obs">{{ kit.observacion }}</span>
+                }
+              </div>
+            }
+
+          </li>
+        }
+      </ul>
+    </div>
+
+    <!-- ══ PIE: Observación general + Confirmar ════════════════════════ -->
+    @if (d.estado === 'EN_TRANSITO') {
+      <div class="footer-card">
+        <div class="footer-obs">
+          <label class="obs-label">Observaciones generales del despacho (opcional)</label>
+          <textarea
+            class="footer-textarea"
+            rows="2"
+            placeholder="Observaciones sobre la recepción en general..."
+            [ngModel]="observacionGeneral()"
+            (ngModelChange)="observacionGeneral.set($event)"
+          ></textarea>
+        </div>
+
+        <div class="footer-actions">
+          @if (!todoDecidido()) {
+            <p class="footer-warn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71
+                    c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898
+                    0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+              </svg>
+              Hay {{ resumen().sinDecision }} kit(s) sin confirmar.
+              Decide el estado de cada uno o usa "Marcar restantes como OK".
+            </p>
+          }
+          <button class="btn-confirmar"
+                  [disabled]="!puedeEnviar()"
+                  (click)="confirmar()">
+            @if (store.guardando()) {
+              <span class="spinner-sm"></span>
+              Registrando recepción...
+            } @else {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Confirmar recepción de {{ resumen().total }} kits
+            }
+          </button>
+        </div>
+      </div>
+    }
+
+  }
+
+</div>

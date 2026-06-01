@@ -1,0 +1,70 @@
+.toast-wrapper {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .625rem;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: .875rem 1rem;
+  border-radius: 12px;
+  min-width: 280px;
+  max-width: 380px;
+  background: white;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.06);
+  pointer-events: all;
+  animation: slideInRight .25s ease;
+  border-left: 4px solid transparent;
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Variantes ──────────────────────────────────────────── */
+.toast[data-type="success"] { border-left-color: #22c55e; }
+.toast[data-type="error"]   { border-left-color: #ef4444; }
+.toast[data-type="warning"] { border-left-color: #f59e0b; }
+.toast[data-type="info"]    { border-left-color: #3b82f6; }
+
+/* ── Icono ──────────────────────────────────────────────── */
+.toast-icon {
+  width: 20px; height: 20px;
+  flex-shrink: 0; margin-top: 1px;
+}
+.toast-icon svg { width: 20px; height: 20px; display: block; }
+
+.toast[data-type="success"] .toast-icon { color: #22c55e; }
+.toast[data-type="error"]   .toast-icon { color: #ef4444; }
+.toast[data-type="warning"] .toast-icon { color: #f59e0b; }
+.toast[data-type="info"]    .toast-icon { color: #3b82f6; }
+
+/* ── Texto ──────────────────────────────────────────────── */
+.toast-body { flex: 1; min-width: 0; }
+.toast-titulo {
+  font-size: .875rem; font-weight: 600;
+  color: #0f172a; line-height: 1.35;
+}
+.toast-mensaje {
+  font-size: .8125rem; color: #64748b;
+  margin-top: .125rem; line-height: 1.4;
+}
+
+/* ── Botón cerrar ───────────────────────────────────────── */
+.toast-close {
+  background: none; border: none;
+  cursor: pointer; padding: .125rem;
+  color: #94a3b8; flex-shrink: 0;
+  transition: color .15s;
+  display: flex;
+}
+.toast-close:hover { color: #475569; }
+.toast-close svg { width: 16px; height: 16px; }

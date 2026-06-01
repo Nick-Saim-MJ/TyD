@@ -1,0 +1,149 @@
+:host { display: block; }
+
+.topbar {
+  height: 60px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  gap: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* ── Izquierda ─────────────────────────────────────────────── */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+}
+
+/* Hamburger button (móvil) */
+.btn-menu {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: .375rem;
+  border-radius: 8px;
+  color: #64748b;
+  display: none;       /* oculto en desktop */
+  align-items: center;
+  transition: background .15s, color .15s;
+}
+.btn-menu:hover { background: #f1f5f9; color: #0f172a; }
+.btn-menu svg  { width: 22px; height: 22px; display: block; }
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: .875rem;
+}
+
+.breadcrumb-home {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.breadcrumb-sep {
+  width: 14px;
+  height: 14px;
+  stroke: #cbd5e1;
+}
+
+.breadcrumb-current {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* ── Derecha ───────────────────────────────────────────────── */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+/* Badge de zona */
+.zona-badge {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .3125rem .75rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  font-size: .75rem;
+  font-weight: 500;
+  color: #1d4ed8;
+  white-space: nowrap;
+}
+
+.zona-badge svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+.zona-badge--all {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+/* Divider vertical */
+.topbar-divider {
+  width: 1px;
+  height: 28px;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+
+/* Perfil */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a3a6c, #2563eb);
+  color: white;
+  font-size: .875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.user-name {
+  font-size: .8125rem;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.user-rol {
+  font-size: .6875rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .btn-menu     { display: flex; }
+  .zona-badge   { display: none; }
+  .user-info    { display: none; }
+  .topbar-divider { display: none; }
+}

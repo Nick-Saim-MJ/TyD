@@ -1,0 +1,78 @@
+<header class="topbar">
+
+  <!-- Izquierda: hamburger + breadcrumb -->
+  <div class="topbar-left">
+    <!-- Botón hamburger (móvil) -->
+    <button class="btn-menu" (click)="toggleSidebar.emit()"
+            aria-label="Abrir menú de navegación">
+      <svg viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+      </svg>
+    </button>
+
+    <!-- Breadcrumb / título de sección -->
+    <div class="breadcrumb">
+      <span class="breadcrumb-home">TyD</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.8" class="breadcrumb-sep">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+      </svg>
+      <span class="breadcrumb-current">{{ rutaActual }}</span>
+    </div>
+  </div>
+
+  <!-- Derecha: zona + usuario -->
+  <div class="topbar-right">
+
+    <!-- Chip de zona (visible si tiene zona asignada) -->
+    @if (zonaCtx.zonaNombre()) {
+      <div class="zona-badge">
+        <svg viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25
+               S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+        </svg>
+        {{ zonaCtx.zonaNombre() }}
+      </div>
+    }
+
+    <!-- Chip "Todas las zonas" para ADMIN/CONTADOR -->
+    @if (zonaCtx.puedeVerTodasLasZonas()) {
+      <div class="zona-badge zona-badge--all">
+        <svg viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004
+               9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03
+               4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515
+               3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997
+               8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112
+               10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686
+               0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253"/>
+        </svg>
+        Todas las zonas
+      </div>
+    }
+
+    <!-- Divider -->
+    <div class="topbar-divider"></div>
+
+    <!-- Perfil de usuario -->
+    <div class="user-profile">
+      <div class="user-avatar">
+        {{ usuario?.nombreCompleto?.charAt(0)?.toUpperCase() ?? 'U' }}
+      </div>
+      <div class="user-info">
+        <span class="user-name">{{ usuario?.nombreCompleto }}</span>
+        <span class="user-rol">{{ usuario?.rol }}</span>
+      </div>
+    </div>
+
+  </div>
+</header>

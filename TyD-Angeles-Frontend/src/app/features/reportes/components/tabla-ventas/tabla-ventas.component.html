@@ -1,0 +1,191 @@
+<section class="reporte-section">
+  <!-- ── Cabecera ──────────────────────────────────────────────────────────── -->
+  <header class="reporte-header">
+    <div class="reporte-header__title">
+      <span class="reporte-header__icon">🧾</span>
+      <div>
+        <h2>Reporte de Ventas</h2>
+        <p>{{ store.totalVentas() | number }} registros encontrados</p>
+      </div>
+    </div>
+    <button class="btn btn--export" (click)="exportar()"
+            [disabled]="store.exportingVentas() || !store.ventasPage()?.content?.length">
+      <span *ngIf="!store.exportingVentas()">📊 Exportar Excel</span>
+      <span *ngIf="store.exportingVentas()" class="spinner spinner--sm"></span>
+      <span *ngIf="store.exportingVentas()">Preparando...</span>
+    </button>
+  </header>
+
+  <!-- ── Filtros ───────────────────────────────────────────────────────────── -->
+  <div class="filtros-panel">
+    <div class="filtro-group">
+      <label>Zona</label>
+      <select [(ngModel)]="filtros.zonaId" (change)="onZonaChange()">
+        <option [ngValue]="null">Todas las zonas</option>
+        <option *ngFor="let z of store.zonas()" [ngValue]="z.id">{{ z.nombre }}</option>
+      </select>
+    </div>
+
+    <div class="filtro-group">
+      <label>Oficina</label>
+      <select [(ngModel)]="filtros.sucursalId" (change)="onSucursalChange()">
+        <option [ngValue]="null">Todas las oficinas</option>
+        <option *ngFor="let s of store.sucursalesFiltradas()" [ngValue]="s.id">{{ s.nombre }}</option>
+      </select>
+    </div>
+
+    <div class="filtro-group">
+      <label>Vendedor</label>
+      <select [(ngModel)]="filtros.vendedorId" (change)="onVendedorChange()">
+        <option [ngValue]="null">Todos</option>
+        <option *ngFor="let v of store.vendedores()" [ngValue]="v.id">{{ v.nombres }}</option>
+      </select>
+    </div>
+
+    <div class="filtro-group">
+      <label>Mes</label>
+      <input type="month" [(ngModel)]="filtros.mes" (change)="onMesChange()"
+             [min]="periodoMin" [max]="periodoMax">
+    </div>
+
+    <div class="filtros-acciones">
+      <button class="btn btn--primary" (click)="buscar()">🔍 Buscar</button>
+      <button class="btn btn--ghost" (click)="limpiarFiltros()">Limpiar</button>
+    </div>
+  </div>
+
+  <!-- ── Loading / Error ───────────────────────────────────────────────────── -->
+  <div *ngIf="store.loadingVentas()" class="tabla-estado">
+    <div class="spinner"></div>
+    <p>Cargando ventas...</p>
+  </div>
+
+  <div *ngIf="store.errorVentas()" class="tabla-estado tabla-estado--error">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <p>{{ store.errorVentas() }}</p>
+  </div>
+
+  <!-- ── Tabla con scroll horizontal ───────────────────────────────────────── -->
+  <div class="tabla-wrapper" *ngIf="!store.loadingVentas() && !store.errorVentas()">
+    <div class="tabla-scroll-container">
+      <table>
+        <thead>
+        <tr>
+          <th>N°</th>
+          <th>Zona</th>
+          <th>Oficina</th>
+          <th>Serie Maestro</th>
+          <th>SIM</th>
+          <th>Producto</th>
+          <th>DNI</th>
+          <th>Cliente</th>
+          <th class="th-center">Tipo</th>
+          <th>Vendedor</th>
+          <th class="th-right">Monto</th>
+          <th class="th-center">Condición</th>
+          <th class="th-center">Pago</th>
+          <th class="th-center">Estado</th>
+          <th class="th-right">Liquidado</th>
+          <th>Fecha</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let v of store.ventasPage()?.content; let i = index"
+            [class.row-anulada]="v.estado === 'ANULADA'">
+
+          <td>{{ v.ventaId }}</td>
+          <td>{{ v.zona }}</td>
+          <td>{{ v.sucursal }}</td>
+
+          <td class="td-serie">
+            <span class="serial serial--maestro">{{ v.serieMaestro }}</span>
+          </td>
+
+          <td class="td-serie">
+            <span class="serial serial--sim">{{ v.serieSim }}</span>
+          </td>
+
+          <td class="td-producto">{{ v.producto }}</td>
+          <td class="td-dni">{{ v.clienteDni }}</td>
+
+          <td class="td-cliente">
+            <span class="cliente-nombre">{{ v.clienteNombre }}</span>
+          </td>
+
+          <td class="td-center">
+              <span class="tipo-badge" [class.tipo-badge--pdv]="v.clienteTipo === 'PDV'">
+                {{ v.clienteTipo ?? '—' }}
+              </span>
+          </td>
+
+          <td class="td-vendedor">{{ v.vendedor }}</td>
+
+          <td class="td-monto">
+            <span class="monto">S/ {{ v.monto | number:'1.2-2' }}</span>
+          </td>
+
+          <td class="td-center">
+              <span class="condicion" [class.condicion--credito]="v.condicion === 'CREDITO'">
+                {{ v.condicion ?? '—' }}
+              </span>
+          </td>
+
+          <td class="td-center">
+            <span class="pago-badge">{{ v.metodoPago ?? '—' }}</span>
+          </td>
+
+          <td class="td-center">
+              <span class="badge" [ngClass]="estadoClass(v.estado ?? '')">
+                {{ v.estado ?? '—' }}
+              </span>
+          </td>
+
+          <td class="td-monto">
+            <span class="monto">S/ {{ (v.montoLiquidado ?? 0) | number:'1.2-2' }}</span>
+          </td>
+
+          <td class="td-fecha">{{ v.fechaVenta | date:'dd/MM/yyyy HH:mm' }}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Indicador de scroll -->
+    <div class="scroll-indicator" *ngIf="store.ventasPage()?.content?.length">
+      <span>← Desliza para ver más columnas →</span>
+    </div>
+  </div>
+
+  <!-- ── Estado vacío ──────────────────────────────────────────────────────── -->
+  <div *ngIf="!store.loadingVentas() && !store.errorVentas() && (!store.ventasPage()?.content || store.ventasPage()!.content.length === 0)"
+       class="tabla-estado tabla-estado--empty">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+    <p>No hay ventas con los filtros seleccionados</p>
+  </div>
+
+  <!-- ── Paginación ────────────────────────────────────────────────────────── -->
+  <div class="paginacion" *ngIf="store.ventasPage()?.totalPages && store.ventasPage()!.totalPages > 1">
+    <button class="pag-btn" (click)="irPagina(store.paginaActual() - 1)"
+            [disabled]="store.paginaActual() === 0">‹</button>
+
+    <button *ngFor="let p of paginas"
+            class="pag-btn"
+            [class.pag-btn--activo]="p === store.paginaActual()"
+            (click)="irPagina(p)">
+      {{ p + 1 }}
+    </button>
+
+    <button class="pag-btn" (click)="irPagina(store.paginaActual() + 1)"
+            [disabled]="store.paginaActual() >= store.ventasPage()!.totalPages - 1">›</button>
+
+    <span class="pag-info">
+      Página {{ store.paginaActual() + 1 }} de {{ store.ventasPage()?.totalPages }}
+    </span>
+  </div>
+</section>

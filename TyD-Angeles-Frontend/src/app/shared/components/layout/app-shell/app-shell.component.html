@@ -1,0 +1,30 @@
+<!-- Overlay para móvil (cierra sidebar al tocar fuera) -->
+@if (sidebarAbierto()) {
+  <div class="sidebar-overlay" (click)="cerrarSidebar()"></div>
+}
+
+<div class="shell-layout">
+
+  <!-- ═══ SIDEBAR ════════════════════════════════════════════════════════ -->
+  <div class="sidebar-wrapper" [class.open]="sidebarAbierto()">
+    <app-sidebar (cerrar)="cerrarSidebar()" />
+  </div>
+
+  <!-- ═══ CONTENIDO PRINCIPAL ════════════════════════════════════════════ -->
+  <div class="main-wrapper">
+
+    <!-- Topbar fijo arriba -->
+    <app-topbar (toggleSidebar)="toggleSidebar()" />
+
+    <!-- Área de contenido con router-outlet -->
+    <main class="content-area">
+      <router-outlet />
+    </main>
+
+  </div>
+
+</div>
+
+<!-- ═══ GLOBALES (siempre presentes) ═══════════════════════════════════ -->
+<app-toast-container />
+<app-confirm-modal />

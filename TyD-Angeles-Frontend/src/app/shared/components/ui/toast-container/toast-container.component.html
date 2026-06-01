@@ -1,0 +1,52 @@
+<div class="toast-wrapper" aria-live="polite" aria-atomic="false">
+  @for (toast of toastSvc.toasts(); track trackById($index, toast)) {
+    <div class="toast" [attr.data-type]="toast.type" role="alert">
+
+      <!-- Icono -->
+      <span class="toast-icon">
+        @switch (toast.type) {
+          @case ('success') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+            </svg>
+          }
+          @case ('error') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          }
+          @case ('warning') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+            </svg>
+          }
+          @default {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0
+                  001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+            </svg>
+          }
+        }
+      </span>
+
+      <!-- Texto -->
+      <div class="toast-body">
+        <p class="toast-titulo">{{ toast.titulo }}</p>
+        @if (toast.mensaje) {
+          <p class="toast-mensaje">{{ toast.mensaje }}</p>
+        }
+      </div>
+
+      <!-- Cerrar -->
+      <button class="toast-close" (click)="cerrar(toast.id)"
+              aria-label="Cerrar notificación">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+    </div>
+  }
+</div>

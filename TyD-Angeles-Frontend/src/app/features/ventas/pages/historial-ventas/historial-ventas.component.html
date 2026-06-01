@@ -1,0 +1,277 @@
+<div class="page">
+
+  <!-- ══ CABECERA ════════════════════════════════════════════════════════ -->
+  <header class="page-header">
+    <div class="page-header-left">
+      <h1 class="page-title">
+        <span class="title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198
+                1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0
+                013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25
+                6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621
+                0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125
+                1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0
+                0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15"/>
+          </svg>
+        </span>
+        Historial de Ventas
+      </h1>
+      <p class="page-subtitle">
+        @if (puedeVerTodasLasZonas()) {
+          Todas las zonas y regiones
+        } @else {
+          {{ zonaCtx.zonaNombre() }}
+        }
+      </p>
+    </div>
+    @if (puedeRegistrar()) {
+      <button class="btn btn-primary" (click)="irARegistrar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+        </svg>
+        Nueva Venta
+      </button>
+    }
+  </header>
+
+  <!-- ══ TARJETAS RESUMEN ═════════════════════════════════════════════════ -->
+  <div class="resumen-grid">
+    <div class="resumen-card">
+      <div class="resumen-icon resumen-icon--blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625
+              4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+        </svg>
+      </div>
+      <div class="resumen-data">
+        <span class="resumen-num">{{ resumen().total }}</span>
+        <span class="resumen-label">Total ventas</span>
+      </div>
+    </div>
+    <div class="resumen-card">
+      <div class="resumen-icon resumen-icon--green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="resumen-data">
+        <span class="resumen-num">{{ resumen().activas }}</span>
+        <span class="resumen-label">Activas</span>
+      </div>
+    </div>
+    <div class="resumen-card">
+      <div class="resumen-icon resumen-icon--red">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </div>
+      <div class="resumen-data">
+        <span class="resumen-num">{{ resumen().anuladas }}</span>
+        <span class="resumen-label">Anuladas</span>
+      </div>
+    </div>
+    <div class="resumen-card resumen-card--monto">
+      <div class="resumen-icon resumen-icon--orange">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242
+              0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768
+              12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303
+              0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="resumen-data">
+        <span class="resumen-num resumen-num--sm">{{ formatMonto(resumen().monto) }}</span>
+        <span class="resumen-label">Monto total activas</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FILTROS ══════════════════════════════════════════════════════════ -->
+  <section class="filtros-card">
+    <div class="filtros-grid">
+
+      <div class="filtro-field">
+        <label class="filtro-label">Periodo</label>
+        <input type="month" class="filtro-input"
+               [ngModel]="filtroMes()" (ngModelChange)="filtroMes.set($event)"/>
+      </div>
+
+      <div class="filtro-field">
+        <label class="filtro-label">Tipo de cliente</label>
+        <select class="filtro-select"
+                [ngModel]="filtroTipo()" (ngModelChange)="filtroTipo.set($event)">
+          <option value="">Todos</option>
+          <option value="GENERAL">Persona natural</option>
+          <option value="PDV">PDV (Empresa)</option>
+        </select>
+      </div>
+
+      <!-- Filtro de vendedor (solo si puede ver todos) -->
+      @if (store.vendedores().length) {
+        <div class="filtro-field">
+          <label class="filtro-label">Vendedor</label>
+          <select class="filtro-select" (change)="onVendedorFiltroChange($event)">
+            <option value="">Todos los vendedores</option>
+            @for (v of store.vendedores(); track v.id) {
+              <option [value]="v.id">{{ v.nombreCompleto }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <div class="filtro-actions">
+        <button class="btn btn-primary" (click)="buscar()"
+                [disabled]="store.cargandoVentas()">
+          @if (store.cargandoVentas()) {
+            <span class="spinner-sm"></span>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+            </svg>
+          }
+          Buscar
+        </button>
+        <button class="btn btn-ghost" (click)="limpiar()">Limpiar</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ TABLA ════════════════════════════════════════════════════════════ -->
+  <div class="table-card">
+
+    @if (store.cargandoVentas()) {
+      <div class="empty-state">
+        <div class="spinner-lg"></div>
+        <p>Cargando ventas...</p>
+      </div>
+    } @else if (!store.ventas().length) {
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342
+              1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75"/>
+        </svg>
+        <p>No hay ventas con los filtros seleccionados</p>
+        @if (puedeRegistrar()) {
+          <button class="btn btn-primary" (click)="irARegistrar()">Registrar primera venta</button>
+        }
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Kit / Seriales</th>
+              <th>Cliente</th>
+              <th>Vendedor</th>
+              @if (puedeVerTodasLasZonas()) {
+                <th>Zona / Sucursal</th>
+              }
+              <th class="th-right">Monto</th>
+              <th>Pago</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+              @if (puedeAnular()) {
+                <th class="th-center">Acción</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (v of store.ventas(); track v.id) {
+              <tr class="table-row" [class.row-anulada]="v.estado === 'ANULADA'">
+
+                <td class="td-id">#{{ v.id }}</td>
+
+                <!-- Kit -->
+                <td class="td-kit">
+                  <span class="serial serial--maestro">{{ v.serieMaestro }}</span>
+                  <span class="serial serial--sim">{{ v.serieSim }}</span>
+                  <span class="prod-nombre">{{ v.productoNombre }}</span>
+                </td>
+
+                <!-- Cliente -->
+                <td class="td-cliente">
+                  <span class="cliente-nombre">{{ v.clienteNombreCompleto }}</span>
+                  <div class="cliente-meta">
+                    <span class="cliente-dni">{{ v.clienteDni }}</span>
+                    <span class="tipo-badge" [class.tipo-badge--pdv]="v.clienteTipo === 'PDV'">
+                      {{ v.clienteTipo }}
+                    </span>
+                  </div>
+                </td>
+
+                <!-- Vendedor -->
+                <td class="td-vendedor">{{ v.vendedorNombre }}</td>
+
+                <!-- Zona/Sucursal (solo para quien ve todo) -->
+                @if (puedeVerTodasLasZonas()) {
+                  <td class="td-zona">
+                    <span class="zona-nombre">{{ v.zonaNombre }}</span>
+                    <span class="sucursal-nombre">{{ v.sucursalVentaNombre }}</span>
+                  </td>
+                }
+
+                <!-- Monto -->
+                <td class="td-monto">
+                  <span class="monto">{{ formatMonto(v.montoVenta) }}</span>
+                  <span class="condicion" [class.condicion--credito]="v.condicion === 'CREDITO'">
+                    {{ v.condicion }}
+                  </span>
+                </td>
+
+                <!-- Método de pago -->
+                <td class="td-pago">
+                  <span class="pago-badge">{{ v.metodoPago }}</span>
+                </td>
+
+                <!-- Estado -->
+                <td>
+                  <app-estado-badge [estado]="v.estado" />
+                  @if (v.motivoAnulacion) {
+                    <span class="motivo-anulacion" [title]="v.motivoAnulacion">
+                      {{ v.motivoAnulacion | slice:0:30 }}{{ v.motivoAnulacion.length > 30 ? '…' : '' }}
+                    </span>
+                  }
+                </td>
+
+                <!-- Fecha -->
+                <td class="td-fecha">{{ v.fechaVenta | fechaLocal:'fecha-hora' }}</td>
+
+                <!-- Acción anular -->
+                @if (puedeAnular()) {
+                  <td class="td-center">
+                    @if (v.estado === 'ACTIVA') {
+                      <button class="btn-anular" (click)="anular(v)"
+                              title="Anular esta venta">
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.8">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Anular
+                      </button>
+                    } @else {
+                      <span class="ya-anulada">—</span>
+                    }
+                  </td>
+                }
+
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  </div>
+
+</div>

@@ -1,0 +1,274 @@
+<section class="reporte-section">
+
+  <!-- ── Cabecera ─────────────────────────────────────────────────────── -->
+  <div class="reporte-header">
+    <div class="reporte-header__title">
+      <span class="reporte-header__icon">📦</span>
+      <div>
+        <h2>Kardex Mensual</h2>
+        <p>Resumen de stock por sucursal y producto</p>
+      </div>
+    </div>
+    <div class="header-acciones">
+      <div class="kpi-chips">
+        <span class="kpi-chip kpi-chip--cerrado">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a4 4 0 1 1 0 8A4 4 0 0 1 8 1Zm0 9a6 6 0 0 1 6 6H2a6 6 0 0 1 6-6Z"/></svg>
+          {{ store.kardexCerrados() }} cerrado{{ store.kardexCerrados() !== 1 ? 's' : '' }}
+        </span>
+        <span class="kpi-chip kpi-chip--abierto">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/>
+          </svg>
+          {{ store.kardexAbiertos() }} abierto{{ store.kardexAbiertos() !== 1 ? 's' : '' }}
+        </span>
+      </div>
+      <button
+        class="btn btn--export"
+        (click)="exportar()"
+        [disabled]="store.kardexResumen().length === 0">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M10 3v10M5 9l5 5 5-5M4 16h12"/>
+        </svg>
+        Exportar Excel
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Filtros ───────────────────────────────────────────────────────── -->
+  <!-- ── Filtros ───────────────────────────────────────────────────────────── -->
+  <div class="filtros-panel">
+    <div class="filtro-group">
+      <label class="filtro-label">Sucursal</label>
+      <select class="filtro-select" [(ngModel)]="filtros.sucursalId">
+        <option [ngValue]="null">Todas las sucursales</option>
+        <option *ngFor="let s of store.sucursales()" [ngValue]="s.id">{{ s.nombre }}</option>
+      </select>
+    </div>
+
+    <div class="filtro-group">
+      <label class="filtro-label">Modelo</label>
+      <select class="filtro-select" [(ngModel)]="filtros.modeloKit">
+        <option [ngValue]="null">LH100 y LH300</option>
+        <option [ngValue]="'LH100'">LH100</option>
+        <option [ngValue]="'LH300'">LH300</option>
+      </select>
+    </div>
+
+    <div class="filtro-group">
+      <label class="filtro-label">Período</label>
+      <input type="month"
+             class="filtro-input"
+             [(ngModel)]="filtros.periodo"
+             [min]="periodoMin"
+             [max]="periodoMax">
+    </div>
+
+    <div class="filtros-acciones">
+      <button class="btn btn--primary" (click)="buscar()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+        Buscar
+      </button>
+      <button class="btn btn--ghost" (click)="limpiar()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14"/>
+        </svg>
+        Limpiar
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Toast ─────────────────────────────────────────────────────────── -->
+  <div *ngIf="mensajeCierre()" class="toast" [class.toast--error]="mensajeCierre()?.startsWith('Error')">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+      <ng-container *ngIf="!mensajeCierre()?.startsWith('Error'); else iconError">
+        <path d="M4 10l4 4 8-8"/>
+      </ng-container>
+      <ng-template #iconError>
+        <circle cx="10" cy="10" r="8"/><path d="M10 6v4M10 14h.01"/>
+      </ng-template>
+    </svg>
+    {{ mensajeCierre() }}
+  </div>
+
+  <!-- ── Grid de Kardex ─────────────────────────────────────────────────── -->
+  <div class="kardex-wrapper">
+
+    <!-- Cargando -->
+    <div *ngIf="store.loadingKardex()" class="tabla-estado">
+      <span class="spinner"></span>
+      <span>Cargando kardex...</span>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="store.errorKardex() && !store.loadingKardex()" class="tabla-estado tabla-estado--error">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+        <circle cx="10" cy="10" r="8"/><path d="M10 6v4M10 14h.01"/>
+      </svg>
+      {{ store.errorKardex() }}
+    </div>
+
+    <!-- Empty -->
+    <div *ngIf="!store.loadingKardex() && !store.errorKardex() && store.kardexResumen().length === 0"
+         class="tabla-estado tabla-estado--empty">
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="6" y="6" width="36" height="36" rx="3"/>
+        <path d="M14 18h20M14 24h14M14 30h8"/>
+      </svg>
+      <span>No hay registros de kardex para los filtros seleccionados</span>
+    </div>
+
+    <!-- Tabla principal de resumen -->
+    <table *ngIf="!store.loadingKardex() && store.kardexResumen().length > 0" class="kardex-table">
+      <thead>
+        <tr>
+          <th class="th-expand"></th>
+          <th>Sucursal</th>
+          <th>Zona</th>
+          <th>Modelo</th>
+          <th>Período</th>
+          <th class="text-right">S. Inicio</th>
+          <th class="text-right">Entradas</th>
+          <th class="text-right">Salidas</th>
+          <th class="text-right">S. Final</th>
+          <th class="text-right">Variación</th>
+          <th class="text-center">Estado</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let k of store.kardexResumen()">
+          <!-- Fila resumen -->
+          <tr class="kardex-row" [class.kardex-row--cerrado]="k.cerrado" [class.kardex-row--expanded]="isExpanded(k)">
+            <td class="td-expand">
+              <button class="expand-btn" (click)="toggleDetalle(k)" [title]="isExpanded(k) ? 'Colapsar' : 'Ver detalle'">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"
+                     [style.transform]="isExpanded(k) ? 'rotate(90deg)' : 'rotate(0)'">
+                  <path d="M6 4l4 4-4 4"/>
+                </svg>
+                <span class="spinner spinner--xs" *ngIf="isLoadingDetalle(k)"></span>
+              </button>
+            </td>
+            <td class="td-sucursal">{{ k.sucursalNombre }}</td>
+            <td class="td-zona">{{ k.zonaNombre }}</td>
+            <td><span class="badge badge--modelo">{{ k.modeloKit }}</span></td>
+            <td class="td-periodo">{{ k.periodo }}</td>
+            <td class="text-right num">{{ k.stockInicio }}</td>
+            <td class="text-right num num--entrada">+{{ k.entradas }}</td>
+            <td class="text-right num num--salida">−{{ k.salidas }}</td>
+            <td class="text-right num num--bold">{{ k.stockFin }}</td>
+            <td class="text-right">
+              <span class="variacion" [class.variacion--pos]="variacionKardex(k) > 0" [class.variacion--neg]="variacionKardex(k) < 0">
+                {{ variacionKardex(k) > 0 ? '+' : '' }}{{ variacionKardex(k) }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span class="estado-badge" [class.estado-badge--cerrado]="k.cerrado" [class.estado-badge--abierto]="!k.cerrado">
+                <svg viewBox="0 0 12 12" fill="currentColor" width="9" height="9">
+                  <circle cx="6" cy="6" r="6"/>
+                </svg>
+                {{ k.cerrado ? 'CERRADO' : 'ABIERTO' }}
+              </span>
+              <div *ngIf="k.cerrado && k.fechaCierre" class="fecha-cierre">
+                {{ k.fechaCierre | date:'dd/MM/yy' }}
+              </div>
+            </td>
+            <td class="text-center">
+              <button
+                *ngIf="!k.cerrado"
+                class="btn-cerrar"
+                (click)="solicitarCierre(k)"
+                title="Cerrar período">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <rect x="3" y="7" width="10" height="8" rx="1.5"/>
+                  <path d="M5 7V5a3 3 0 0 1 6 0v2"/>
+                </svg>
+                Cerrar
+              </button>
+              <span *ngIf="k.cerrado" class="locked-icon" title="Período cerrado">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <rect x="3" y="7" width="10" height="8" rx="1.5"/>
+                  <path d="M5 7V5a3 3 0 0 1 6 0v2"/>
+                  <circle cx="8" cy="11" r="1" fill="currentColor"/>
+                </svg>
+              </span>
+            </td>
+          </tr>
+
+          <!-- Fila detalle expandida -->
+          <tr *ngIf="isExpanded(k)" class="kardex-detalle-row">
+            <td colspan="12" class="td-detalle">
+              <div class="detalle-container">
+                <h4 class="detalle-titulo">
+                  Movimientos — {{ k.sucursalNombre }} / {{ k.modeloKit }} / {{ k.periodo }}
+                </h4>
+                <table class="detalle-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Tipo</th>
+                      <th>Concepto</th>
+                      <th class="text-right">Cantidad</th>
+                      <th class="text-right">Stock Acum.</th>
+                      <th>Referencia</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let d of getDetalle(k)">
+                      <td class="td-fecha">{{ d.fecha | date:'dd/MM/yyyy' }}</td>
+                      <td>
+                        <span class="mov-badge" [ngClass]="tipoMovimientoClass(d.tipoMovimiento)">
+                          {{ d.tipoMovimiento }}
+                        </span>
+                      </td>
+                      <td>{{ d.concepto }}</td>
+                      <td class="text-right num"
+                          [class.num--entrada]="d.tipoMovimiento === 'ENTRADA'"
+                          [class.num--salida]="d.tipoMovimiento === 'SALIDA'">
+                        {{ d.tipoMovimiento === 'SALIDA' ? '−' : '+' }}{{ d.cantidad }}
+                      </td>
+                      <td class="text-right num num--bold">{{ d.stockAcum }}</td>
+                      <td class="td-ref">{{ d.referencia }}</td>
+                    </tr>
+                    <tr *ngIf="getDetalle(k).length === 0">
+                      <td colspan="6" class="td-vacio">Sin movimientos registrados</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </td>
+          </tr>
+
+        </ng-container>
+      </tbody>
+    </table>
+
+  </div>
+
+</section>
+
+<!-- ── Modal de confirmación de cierre ───────────────────────────────────── -->
+<div class="modal-overlay" *ngIf="kardexACerrar()" (click)="cancelarCierre()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal__icono">🔒</div>
+    <h3 class="modal__titulo">Cerrar período</h3>
+    <p class="modal__desc">
+      Esta acción bloqueará el kardex de
+      <strong>{{ kardexACerrar()?.sucursalNombre }}</strong> —
+      <strong>{{ kardexACerrar()?.modeloKit }}</strong> para el período
+      <strong>{{ kardexACerrar()?.periodo }}</strong>.
+    </p>
+    <p class="modal__aviso">
+      ⚠️ Esta operación <u>no se puede deshacer</u>. Verifique que el inventario esté correcto antes de continuar.
+    </p>
+    <div class="modal__acciones">
+      <button class="btn btn--ghost" (click)="cancelarCierre()" [disabled]="cerrando()">Cancelar</button>
+      <button class="btn btn--danger" (click)="confirmarCierre()" [disabled]="cerrando()">
+        <span *ngIf="!cerrando()">Confirmar cierre</span>
+        <span *ngIf="cerrando()"><span class="spinner spinner--sm"></span> Cerrando...</span>
+      </button>
+    </div>
+  </div>
+</div>

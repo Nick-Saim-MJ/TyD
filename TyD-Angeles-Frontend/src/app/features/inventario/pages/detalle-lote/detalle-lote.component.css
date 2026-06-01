@@ -1,0 +1,199 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 1400px;
+}
+
+/* ── Botón volver ─────────────────────────────────────────── */
+.btn-back {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: none; border: none; cursor: pointer;
+  color: #64748b; font-size: .875rem; font-weight: 500;
+  padding: 0; width: fit-content;
+  transition: color .15s;
+}
+.btn-back:hover { color: #0f172a; }
+.btn-back svg   { width: 16px; height: 16px; }
+
+/* ── Card header del lote ─────────────────────────────────── */
+.lote-header-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.lote-header-top {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; gap: 1rem;
+  margin-bottom: 1.125rem;
+  flex-wrap: wrap;
+}
+.lote-titulo {
+  font-size: 1.375rem; font-weight: 700;
+  color: #0f172a; letter-spacing: -.02em;
+  margin-bottom: .25rem;
+}
+.lote-zona {
+  display: flex; align-items: center; gap: .375rem;
+  font-size: .875rem; color: #64748b;
+}
+.lote-zona svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.operacion-badge {
+  display: flex; flex-direction: column; align-items: flex-end;
+  gap: .125rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  padding: .625rem 1rem;
+}
+.operacion-label { font-size: .6875rem; color: #92400e; font-weight: 500; }
+.operacion-valor {
+  font-size: 1rem; font-weight: 700;
+  color: #b45309;
+  font-family: 'SF Mono','Fira Code', monospace;
+  letter-spacing: .04em;
+}
+
+/* Meta información */
+.lote-meta {
+  display: flex; gap: 2rem; flex-wrap: wrap;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+}
+.meta-item { display: flex; flex-direction: column; gap: .125rem; }
+.meta-item--wide { flex: 1; min-width: 200px; }
+.meta-label { font-size: .6875rem; font-weight: 500; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; }
+.meta-valor { font-size: .875rem; color: #1e293b; font-weight: 500; }
+
+/* ── Tarjetas resumen ─────────────────────────────────────── */
+.resumen-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: .75rem;
+}
+.resumen-card {
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex; flex-direction: column; gap: .25rem;
+}
+.resumen-card:hover      { border-color: #cbd5e1; background: #fafbfc; }
+.resumen-card.active     { border-color: #1a3a6c; background: #eff6ff; }
+
+.resumen-card--disponible.active  { border-color: #22c55e; background: #f0fdf4; }
+.resumen-card--vendido.active     { border-color: #94a3b8; background: #f8fafc; }
+.resumen-card--transito.active    { border-color: #f59e0b; background: #fffbeb; }
+.resumen-card--defectuoso.active  { border-color: #ef4444; background: #fef2f2; }
+
+.resumen-numero {
+  font-size: 1.5rem; font-weight: 700; color: #0f172a; line-height: 1;
+}
+.resumen-label { font-size: .75rem; color: #64748b; font-weight: 500; }
+
+/* ── Tabla de kits ────────────────────────────────────────── */
+.table-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  overflow: hidden;
+}
+.table-header {
+  padding: .875rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+.table-count {
+  font-size: .8125rem; color: #64748b;
+}
+.table-count strong { color: #1e293b; font-weight: 600; }
+
+.table-wrapper { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: .8125rem; }
+
+.table thead tr { background: #f8fafc; border-bottom: 1.5px solid #e2e8f0; }
+.table th {
+  padding: .6875rem 1rem; text-align: left;
+  font-size: .6875rem; font-weight: 600;
+  color: #64748b; text-transform: uppercase;
+  letter-spacing: .05em; white-space: nowrap;
+}
+.table-row { border-bottom: 1px solid #f1f5f9; transition: background .12s; }
+.table-row:last-child { border-bottom: none; }
+.table-row:hover { background: #fafbfc; }
+.table td { padding: .75rem 1rem; vertical-align: middle; }
+
+.td-num    { color: #94a3b8; font-size: .75rem; width: 40px; }
+.td-fecha  { white-space: nowrap; color: #64748b; font-size: .8rem; }
+.td-custodio { font-size: .8125rem; color: #475569; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Seriales */
+.serial {
+  display: inline-block;
+  font-family: 'SF Mono','Fira Code', monospace;
+  font-size: .75rem;
+  padding: .1875rem .5rem;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+.serial--maestro { background: #eff6ff; color: #1d4ed8; }
+.serial--sim     { background: #f0fdf4; color: #15803d; }
+.serial--deco    { background: #faf5ff; color: #7c3aed; }
+
+/* Modelo */
+.modelo-chip {
+  display: inline-block;
+  padding: .1875rem .5rem;
+  background: #f1f5f9; color: #334155;
+  border-radius: 6px;
+  font-size: .75rem; font-weight: 600;
+  letter-spacing: .03em;
+}
+
+/* Ubicación */
+.td-ubicacion { min-width: 150px; }
+.ubicacion    { display: flex; flex-direction: column; gap: .125rem; }
+.ubicacion-nombre { font-size: .8125rem; color: #1e293b; font-weight: 500; }
+.ubicacion-zona   { font-size: .6875rem; color: #94a3b8; }
+.text-muted       { color: #94a3b8; }
+
+/* Estado vacío / carga */
+.loading-center {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 1rem;
+  padding: 4rem 2rem;
+  color: #64748b; font-size: .875rem;
+}
+.empty-state {
+  display: flex; flex-direction: column;
+  align-items: center; gap: .75rem;
+  padding: 3rem 2rem; text-align: center;
+}
+.empty-state svg { width: 44px; height: 44px; stroke: #cbd5e1; }
+.empty-state p   { font-size: .875rem; color: #94a3b8; }
+
+/* Spinners */
+.spinner-lg {
+  width: 40px; height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #f97316;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .resumen-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 600px) {
+  .resumen-grid { grid-template-columns: repeat(2, 1fr); }
+  .lote-header-top { flex-direction: column; }
+}

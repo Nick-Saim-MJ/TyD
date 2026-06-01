@@ -1,0 +1,79 @@
+:host { display: block; }
+
+/* ── Layout principal: sidebar izquierda + contenido derecha ── */
+.shell-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f1f5f9;
+}
+
+/* ── Sidebar wrapper ───────────────────────────────────────── */
+.sidebar-wrapper {
+  flex-shrink: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  /* En desktop siempre visible */
+}
+
+/* ── Contenido principal ───────────────────────────────────── */
+.main-wrapper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Área de contenido debajo de la topbar */
+.content-area {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+/* ── Overlay móvil ─────────────────────────────────────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 199;
+  animation: fadeIn .2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Responsive: móvil ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar-wrapper {
+    /* En móvil: sidebar fuera de pantalla por defecto */
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+  }
+
+  .sidebar-wrapper.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    display: block;
+  }
+
+  .content-area {
+    padding: 1rem;
+  }
+}
+
+/* ── Ajuste del padding cuando el sidebar está colapsado ───── */
+@media (min-width: 769px) {
+  .sidebar-overlay { display: none !important; }
+}

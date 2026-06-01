@@ -1,0 +1,54 @@
+/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #f1f5f9;
+  color: #0f172a;
+  line-height: 1.5;
+}
+
+:root {
+  --color-primary:       #1a3a6c;
+  --color-primary-dark:  #0f2347;
+  --color-accent:        #f97316;
+  --color-accent-dark:   #ea580c;
+  --color-white:         #ffffff;
+  --color-gray-50:       #f8fafc;
+  --color-gray-100:      #f1f5f9;
+  --color-gray-200:      #e2e8f0;
+  --color-gray-500:      #64748b;
+  --color-gray-900:      #0f172a;
+  --color-success:       #22c55e;
+  --color-warning:       #f59e0b;
+  --color-error:         #ef4444;
+  --color-info:          #3b82f6;
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --color-primario: #1A3A5C;
+  --color-primario-rgb: 26, 58, 92;
+  --color-texto-primario:   #0F172A;
+  --color-texto-secundario: #64748B;
+  --color-borde: #E2E8F0;
+  --color-texto-terciario: #94A3B8;
+  --color-superficie: #FFFFFF;
+  --color-fondo-alt:   #F1F5F9;
+  --radio-sm: 6px;
+  --radio-md: 10px;
+  --transicion: 0.15s ease;
+  --sombra-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }

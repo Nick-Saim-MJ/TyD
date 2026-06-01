@@ -1,0 +1,460 @@
+<div class="page">
+
+  <!-- ══ ÉXITO ═══════════════════════════════════════════════════════════ -->
+  @if (store.ventaExito(); as exito) {
+    <div class="exito-banner">
+      <div class="exito-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+        </svg>
+      </div>
+      <div class="exito-texto">
+        <strong>¡Venta registrada! #{{ exito.ventaId }}</strong>
+        <span>Kit {{ exito.serieMaestro }} — {{ exito.cliente }}</span>
+      </div>
+      <div class="exito-acciones">
+        <button class="btn btn-outline-white" (click)="nuevaVenta()">
+          Nueva venta
+        </button>
+        <button class="btn btn-white" (click)="irHistorial()">
+          Ver historial
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- ══ CABECERA ════════════════════════════════════════════════════════ -->
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Registrar Venta</h1>
+      <p class="page-subtitle">Escanea el kit, busca el cliente y completa los datos</p>
+    </div>
+    <button class="btn btn-ghost" (click)="irHistorial()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      Ver historial
+    </button>
+  </header>
+
+  <div class="form-grid">
+
+    <!-- ══ COLUMNA IZQ ══════════════════════════════════════════════════ -->
+    <div class="col">
+
+      <!-- ── PASO 1: Kit ──────────────────────────────────────────────── -->
+      <section class="section-card">
+        <div class="step-badge">1</div>
+        <h2 class="section-title">Kit a vender</h2>
+
+        <div class="scanner-row">
+          <div class="scanner-wrap" [attr.data-estado]="store.estadoEscaneo()">
+            <svg class="scanner-prefix-icon" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621
+                  0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125
+                  1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5z"/>
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621
+                  0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125
+                  1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5
+                  4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504
+                  1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125
+                  1.125 0 01-1.125-1.125v-4.5z"/>
+            </svg>
+            <input
+              #kitInput
+              type="text"
+              class="scanner-input"
+              placeholder="Escanea el código de barras o escribe el serial…"
+              [value]="valorKit()"
+              (input)="onKitInput($event)"
+              (keydown)="onKitKeydown($event)"
+              autocomplete="off"
+              autofocus
+            />
+            @if (store.estadoEscaneo() === 'BUSCANDO') {
+              <span class="scanner-spinner"></span>
+            } @else if (store.estadoEscaneo() === 'DISPONIBLE') {
+              <svg class="scanner-ok" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+              </svg>
+            } @else if (store.estadoEscaneo() === 'NO_DISPONIBLE' || store.estadoEscaneo() === 'NO_ENCONTRADO') {
+              <svg class="scanner-error-icon" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            }
+          </div>
+          <button class="btn-scan-go"
+                  [disabled]="!valorKit().trim() || store.estadoEscaneo() === 'BUSCANDO'"
+                  (click)="buscarKitManual()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Error escaneo -->
+        @if (store.errorEscaneo()) {
+          <div class="kit-feedback kit-feedback--error">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+            </svg>
+            {{ store.errorEscaneo() }}
+          </div>
+        }
+
+        <!-- Kit validado: info completa -->
+        @if (store.kitValidado(); as kit) {
+          <div class="kit-card">
+            <div class="kit-card-top">
+              <div class="kit-disponible-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                </svg>
+                Disponible
+              </div>
+              <button class="btn-clear-kit" (click)="store.limpiarKit()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            <div class="kit-card-seriales">
+              <div class="kit-serial-row">
+                <span class="serial-label">Maestro</span>
+                <span class="serial serial--maestro">{{ kit.serieMaestro }}</span>
+              </div>
+              <div class="kit-serial-row">
+                <span class="serial-label">SIM</span>
+                <span class="serial serial--sim">{{ kit.serieSim }}</span>
+              </div>
+              @if (kit.serieDeco) {
+                <div class="kit-serial-row">
+                  <span class="serial-label">Deco</span>
+                  <span class="serial serial--deco">{{ kit.serieDeco }}</span>
+                </div>
+              }
+            </div>
+            <div class="kit-card-meta">
+              <span>{{ kit.productoNombre }}</span>
+              @if (kit.modeloCodigo) { <span class="sep">·</span><span>{{ kit.modeloCodigo }}</span> }
+              @if (kit.sucursalNombre) { <span class="sep">·</span><span>{{ kit.sucursalNombre }}</span> }
+            </div>
+          </div>
+        }
+      </section>
+
+      <!-- ── PASO 2: Cliente ──────────────────────────────────────────── -->
+      <section class="section-card">
+        <div class="step-badge">2</div>
+        <h2 class="section-title">Cliente</h2>
+
+        @if (!mostrarFormNuevo()) {
+          <div class="autocomplete-wrap">
+            <div class="autocomplete-input-row">
+              <div class="field-wrap">
+                <svg class="field-icon" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5
+                      0zM4.501 20.118a7.5 7.5 0 0114.998 0"/>
+                </svg>
+                <input
+                  type="text"
+                  class="field-input"
+                  [class.field-input--selected]="!!store.clienteSeleccionado()"
+                  placeholder="Busca por DNI, nombre o RUC…"
+                  [value]="valorBusqCliente()"
+                  (input)="onBuscarCliente($event)"
+                  (focus)="dropdownAbierto.set(true)"
+                  autocomplete="off"
+                />
+                @if (store.buscandoClientes()) {
+                  <span class="field-spinner"></span>
+                }
+              </div>
+              <button class="btn-nuevo-cliente" (click)="toggleNuevoCliente()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                </svg>
+                Nuevo
+              </button>
+            </div>
+
+            <!-- Dropdown resultados -->
+            @if (dropdownAbierto() && store.clientesBusqueda().length) {
+              <ul class="autocomplete-dropdown">
+                @for (c of store.clientesBusqueda(); track c.id) {
+                  <li class="autocomplete-item" (click)="seleccionarCliente(c)">
+                    <div class="ac-nombre">{{ c.nombreCompleto }}</div>
+                    <div class="ac-meta">
+                      <span class="ac-dni">{{ c.dni }}</span>
+                      <span class="ac-tipo" [class.ac-tipo--pdv]="c.tipo === 'PDV'">
+                        {{ c.tipo }}
+                      </span>
+                      @if (c.ruc) { <span class="ac-ruc">RUC: {{ c.ruc }}</span> }
+                    </div>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+
+          <!-- Cliente seleccionado -->
+          @if (store.clienteSeleccionado(); as c) {
+            <div class="cliente-seleccionado">
+              <div class="cs-avatar">{{ c.nombres.charAt(0) }}</div>
+              <div class="cs-info">
+                <span class="cs-nombre">{{ c.nombreCompleto }}</span>
+                <div class="cs-meta">
+                  <span>DNI: {{ c.dni }}</span>
+                  @if (c.telefono) { <span>· {{ c.telefono }}</span> }
+                  <span class="cs-tipo" [class.cs-tipo--pdv]="c.tipo === 'PDV'">{{ c.tipo }}</span>
+                </div>
+              </div>
+              <button class="btn-clear-cs" (click)="store.limpiarCliente(); valorBusqCliente.set('')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          }
+        }
+
+        <!-- Formulario nuevo cliente inline -->
+        @if (mostrarFormNuevo()) {
+          <div class="nuevo-cliente-form" [formGroup]="formNuevoCliente">
+            <div class="form-row-2">
+              <div class="field">
+                <label class="label">DNI <span class="req">*</span></label>
+                <input type="text" class="inp" formControlName="dni" placeholder="12345678"
+                       [class.inp--error]="formNuevoCliente.get('dni')?.invalid && formNuevoCliente.get('dni')?.touched"/>
+              </div>
+              <div class="field">
+                <label class="label">Tipo</label>
+                <select class="inp" formControlName="tipo">
+                  @for (t of tiposCliente; track t.valor) {
+                    <option [value]="t.valor">{{ t.label }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="field">
+                <label class="label">Nombres <span class="req">*</span></label>
+                <input type="text" class="inp" formControlName="nombres" placeholder="Juan"
+                       [class.inp--error]="formNuevoCliente.get('nombres')?.invalid && formNuevoCliente.get('nombres')?.touched"/>
+              </div>
+              <div class="field">
+                <label class="label">Apellidos <span class="req">*</span></label>
+                <input type="text" class="inp" formControlName="apellidos" placeholder="Quispe"
+                       [class.inp--error]="formNuevoCliente.get('apellidos')?.invalid && formNuevoCliente.get('apellidos')?.touched"/>
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="field">
+                <label class="label">Teléfono</label>
+                <input type="tel" class="inp" formControlName="telefono" placeholder="9XXXXXXXX"/>
+              </div>
+              @if (esPDV()) {
+                <div class="field">
+                  <label class="label">RUC</label>
+                  <input type="text" class="inp" formControlName="ruc" placeholder="20XXXXXXXXX"/>
+                </div>
+              }
+            </div>
+            @if (esPDV()) {
+              <div class="field">
+                <label class="label">Razón Social</label>
+                <input type="text" class="inp" formControlName="razonSocial" placeholder="Empresa S.A.C."/>
+              </div>
+            }
+            <button class="btn-cancelar-nuevo" (click)="toggleNuevoCliente()">
+              Cancelar — volver a buscar
+            </button>
+          </div>
+        }
+      </section>
+    </div>
+
+    <!-- ══ COLUMNA DER ══════════════════════════════════════════════════ -->
+    <div class="col">
+
+      <!-- ── PASO 3: Datos de la venta ────────────────────────────────── -->
+      <section class="section-card">
+        <div class="step-badge">3</div>
+        <h2 class="section-title">Datos de la venta</h2>
+
+        <!-- Método de pago -->
+        <div class="field">
+          <label class="label">Método de pago</label>
+          <div class="metodo-grid">
+            @for (m of metodosPago; track m.valor) {
+              <button
+                type="button"
+                class="metodo-btn"
+                [class.selected]="metodoPago() === m.valor"
+                (click)="onMetodoPagoSelect(m.valor)"
+              >
+                <span class="metodo-icon">{{ m.icono }}</span>
+                <span class="metodo-label">{{ m.label }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Condición -->
+        <div class="field">
+          <label class="label">Condición</label>
+          <div class="condicion-toggle">
+            <button type="button" class="toggle-btn"
+                    [class.active]="condicion() === 'CONTADO'"
+                    (click)="condicion.set('CONTADO')">
+              Contado
+            </button>
+            <button type="button" class="toggle-btn"
+                    [class.active]="condicion() === 'CREDITO'"
+                    (click)="condicion.set('CREDITO')">
+              Crédito
+            </button>
+          </div>
+        </div>
+
+        <!-- Monto -->
+        <div class="field">
+          <label class="label">Monto de venta (S/) <span class="req">*</span></label>
+          <div class="monto-wrap">
+            <span class="monto-prefix">S/</span>
+            <input
+              type="number"
+              class="inp inp-monto"
+              placeholder="0.00"
+              min="0.01"
+              step="0.01"
+              [value]="montoVenta()"
+              (input)="montoVenta.set(+($any($event.target).value) || null)"
+            />
+          </div>
+        </div>
+
+        <!-- Monto recarga inicial -->
+        <div class="field">
+          <label class="label">Monto recarga inicial (opcional)</label>
+          <div class="monto-wrap">
+            <span class="monto-prefix">S/</span>
+            <input
+              type="number"
+              class="inp inp-monto"
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+              [value]="montoRecarga()"
+              (input)="montoRecarga.set(+($any($event.target).value) || null)"
+            />
+          </div>
+        </div>
+
+        <!-- Vendedor -->
+        <div class="field">
+          <label class="label">Vendedor</label>
+
+          @if (esUsuarioActual(); as esVendedor) {
+            <!-- ✅ CASO 1: Usuario logueado es vendedor → Chip estático -->
+            <div class="vendedor-chip">
+              <span class="vendedor-avatar">{{ vendedorActualNombre()?.charAt(0) ?? '?' }}</span>
+              <div class="vendedor-info">
+        <span class="vendedor-nombre">
+          {{ vendedorActualNombre() ?? 'Cargando...' }}
+        </span>
+                <span class="vendedor-rol">
+          {{ vendedorActualRol() ?? 'Vendedor' }} · Tu usuario
+        </span>
+              </div>
+              <span class="badge-tu">Tú</span>
+            </div>
+            <p class="help-text">
+              La venta se registrará automáticamente a tu nombre.
+            </p>
+          } @else {
+            <!-- ✅ CASO 2: Jefe/Admin → Select editable -->
+            <select
+              class="inp"
+              [value]="vendedorId()"
+              (change)="onVendedorChange($event)">
+              <option value="">— Seleccionar vendedor —</option>
+              @for (v of store.vendedores(); track v.id) {
+                <option [value]="v.id">
+                  {{ v.nombreCompleto }} ({{ v.rol }})
+                </option>
+              }
+            </select>
+          }
+        </div>
+
+      </section>
+
+      <!-- ── Botón registrar ──────────────────────────────────────────── -->
+      <div class="submit-area">
+        @if (store.error()) {
+          <div class="submit-error">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+            </svg>
+            {{ store.error() }}
+          </div>
+        }
+
+        <!-- Checklist de requisitos -->
+        <div class="checklist">
+          <div class="check-item" [class.check-ok]="!!store.kitValidado()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+            </svg>
+            Kit escaneado y disponible
+          </div>
+          <div class="check-item" [class.check-ok]="!!store.clienteSeleccionado() || mostrarFormNuevo()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+            </svg>
+            Cliente seleccionado
+          </div>
+          <div class="check-item" [class.check-ok]="!!montoVenta()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+            </svg>
+            Monto ingresado
+          </div>
+        </div>
+
+        <button class="btn-registrar"
+                [disabled]="!puedeRegistrar()"
+                (click)="registrar()">
+          @if (store.guardando()) {
+            <span class="spinner-sm"></span>
+            Registrando...
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342
+                  1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0
+                  0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0
+                  .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125
+                  1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75
+                  0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15"/>
+            </svg>
+            Registrar Venta
+          }
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

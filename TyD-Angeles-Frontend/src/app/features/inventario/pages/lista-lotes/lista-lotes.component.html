@@ -1,0 +1,211 @@
+<div class="page">
+
+  <!-- ══ CABECERA ════════════════════════════════════════════════════════ -->
+  <header class="page-header">
+    <div class="page-header-left">
+      <h1 class="page-title">
+        <span class="page-title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25
+                2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621
+                0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621
+                0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+          </svg>
+        </span>
+        Lotes de Kits
+      </h1>
+      <p class="page-subtitle">
+        {{ labelZona() }} —
+        {{ store.lotes().length }} lote{{ store.lotes().length !== 1 ? 's' : '' }}
+      </p>
+    </div>
+    <div class="page-header-right">
+      <button class="btn btn-secondary" (click)="irBoucher()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621
+              0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125
+              1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75
+              14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0
+              1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125
+              1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5z"/>
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621
+              0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125
+              1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5z"/>
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M6.75 6.75h.75v.75h-.75v-.75zm0 10.5h.75v.75h-.75v-.75zm10.5-10.5h.75v.75h-.75v-.75z"/>
+        </svg>
+        Buscar por Boucher
+      </button>
+      <button class="btn btn-outline" (click)="exportar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25
+              0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5
+              4.5V3"/>
+        </svg>
+        Exportar Excel
+      </button>
+    </div>
+  </header>
+
+  <!-- ══ FILTROS ══════════════════════════════════════════════════════════ -->
+  <section class="filtros-card">
+    <div class="filtros-grid">
+
+      <!-- Selector de zona (solo ADMIN/CONTADOR) -->
+      @if (puedeSeleccionarZona()) {
+        <div class="filtro-field">
+          <label class="filtro-label">Zona</label>
+          <select class="filtro-select" (change)="onZonaChange($event)">
+            <option value="">Todas las zonas</option>
+            @for (zona of zonasDisponibles; track zona.id) {
+              <option [value]="zona.id">{{ zona.nombre }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <!-- Filtro por periodo -->
+      <div class="filtro-field">
+        <label class="filtro-label">Periodo</label>
+        <input
+          type="month"
+          class="filtro-input"
+          [ngModel]="filtroPeriodo()"
+          (ngModelChange)="filtroPeriodo.set($event)"
+          placeholder="YYYY-MM"
+        />
+
+      </div>
+
+      <!-- Botones -->
+      <div class="filtro-actions">
+        <button class="btn btn-primary" (click)="buscar()"
+                [disabled]="store.cargandoLotes()">
+          @if (store.cargandoLotes()) {
+            <span class="spinner-sm"></span>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+            </svg>
+          }
+          Buscar
+        </button>
+        <button class="btn btn-ghost" (click)="limpiar()">Limpiar</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ TABLA ════════════════════════════════════════════════════════════ -->
+  <div class="table-card">
+
+    @if (store.cargandoLotes()) {
+      <div class="empty-state">
+        <div class="spinner-lg"></div>
+        <p>Cargando lotes...</p>
+      </div>
+    } @else if (store.error()) {
+      <div class="empty-state empty-state--error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+        </svg>
+        <p>{{ store.error() }}</p>
+        <button class="btn btn-outline" (click)="buscar()">Reintentar</button>
+      </div>
+    } @else if (!store.lotes().length) {
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25
+              2.25 0 01-2.247-2.118L3.75 7.5M3.375 7.5h17.25c.621 0
+              1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621
+              0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+        </svg>
+        <p>No hay lotes registrados con los filtros seleccionados</p>
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>N° Pedido</th>
+              <th class="th-operacion">N° Operación</th>
+              <th>Zona</th>
+              <th>Sucursal Recepción</th>
+              <th class="th-center">Recibidos</th>
+              <th class="th-center">Progreso</th>
+              <th>F. Recepción</th>
+              <th class="th-center">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (lote of store.lotes(); track lote.id) {
+              <tr class="table-row">
+                <td>
+                  <span class="code-badge">{{ lote.numeroPedido ?? '—' }}</span>
+                </td>
+                <!-- N° Operación visible solo para ADMIN y CONTADOR -->
+                <td class="td-operacion">
+                  @if (zonaCtx.tieneRol('ADMIN', 'CONTADOR')) {
+                    <span class="text-muted code-sm">{{ lote.numeroOperacion ?? '—' }}</span>
+                  } @else {
+                    <span class="text-muted">—</span>
+                  }
+                </td>
+                <td>
+                  <span class="zona-tag">{{ lote.zonaNombre }}</span>
+                </td>
+                <td class="td-sucursal">{{ lote.sucursalRecepcionNombre }}</td>
+                <td class="td-center">
+                  <span class="count-badge" [class.count-ok]="lote.cantidadRecibida >= lote.cantidadEsperada">
+                    {{ lote.cantidadRecibida }}/{{ lote.cantidadEsperada }}
+                  </span>
+                </td>
+                <td class="td-center">
+                  <div class="progress-wrap">
+                    <div class="progress-bar">
+                      <div class="progress-fill"
+                           [style.width.%]="porcentaje(lote.cantidadEsperada, lote.cantidadRecibida)"
+                           [class.progress-fill--ok]="lote.cantidadRecibida >= lote.cantidadEsperada">
+                      </div>
+                    </div>
+                    <span class="progress-pct">
+                      {{ porcentaje(lote.cantidadEsperada, lote.cantidadRecibida) }}%
+                    </span>
+                  </div>
+                </td>
+                <td class="td-fecha">
+                  {{ lote.fechaRecepcion | fechaLocal }}
+                </td>
+                <td class="td-center">
+                  <button class="btn-detail" (click)="verDetalle(lote.id)"
+                          title="Ver kits del lote">
+                    <svg viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.8">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423
+                          7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007
+                          9.963 7.178.07.207.07.431 0 .639C20.577 16.49
+                          16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    Ver kits
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  </div>
+
+</div>

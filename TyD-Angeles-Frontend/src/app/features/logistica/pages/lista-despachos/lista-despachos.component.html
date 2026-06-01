@@ -1,0 +1,191 @@
+<div class="page">
+
+  <!-- ══ CABECERA ════════════════════════════════════════════════════════ -->
+  <header class="page-header">
+    <div class="page-header-left">
+      <h1 class="page-title">
+        <span class="title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3
+                0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25
+                4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621
+                0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193
+                2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048
+                -.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987
+                1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+          </svg>
+        </span>
+        Logística
+      </h1>
+      <p class="page-subtitle">Gestión de traslados entre almacenes y oficinas</p>
+    </div>
+    @if (puedeCrearDespacho()) {
+      <button class="btn btn-primary" (click)="irACrear()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+        </svg>
+        Nuevo Despacho
+      </button>
+    }
+  </header>
+
+  <!-- ══ TABS ════════════════════════════════════════════════════════════ -->
+  <div class="tabs-bar">
+    <button class="tab-btn" [class.active]="tabActiva() === 'pendientes'"
+            (click)="cambiarTab('pendientes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      Pendientes de recepción
+      @if (store.pendientes().length) {
+        <span class="tab-badge">{{ store.pendientes().length }}</span>
+      }
+    </button>
+    <button class="tab-btn" [class.active]="tabActiva() === 'todos'"
+            (click)="cambiarTab('todos')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm
+            .375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375
+            0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375
+            0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+      </svg>
+      Todos los despachos
+    </button>
+  </div>
+
+  <!-- ══ CONTENIDO ═══════════════════════════════════════════════════════ -->
+  @if (store.cargandoLista()) {
+    <div class="loading-center">
+      <div class="spinner-lg"></div>
+      <p>Cargando despachos...</p>
+    </div>
+  } @else {
+
+    @let lista = tabActiva() === 'pendientes' ? store.pendientes() : store.despachos();
+
+    @if (!lista.length) {
+      <div class="empty-card">
+        @if (tabActiva() === 'pendientes') {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p class="empty-title">Sin recepciones pendientes</p>
+          <p class="empty-desc">No hay despachos en tránsito esperando confirmación</p>
+        } @else {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9
+                0H3.375a1.125 1.125 0 01-1.125-1.125V14.25"/>
+          </svg>
+          <p class="empty-title">No hay despachos registrados</p>
+          <p class="empty-desc">Crea el primer despacho para empezar</p>
+          @if (puedeCrearDespacho()) {
+            <button class="btn btn-primary" (click)="irACrear()">
+              Nuevo Despacho
+            </button>
+          }
+        }
+      </div>
+    } @else {
+      <div class="despachos-grid">
+        @for (d of lista; track d.id) {
+          <div class="despacho-card" [class.card-pendiente]="d.estado === 'EN_TRANSITO'">
+
+            <!-- Estado + inter-zona badge -->
+            <div class="card-top">
+              <app-estado-badge [estado]="d.estado" />
+              @if (d.esInterZona) {
+                <span class="badge-interzona">↔ Inter-zona</span>
+              }
+              <span class="card-id">#{{ d.id }}</span>
+            </div>
+
+            <!-- Ruta: origen → destino -->
+            <div class="card-ruta">
+              <div class="ruta-punto">
+                <span class="ruta-label">Origen</span>
+                <span class="ruta-nombre">{{ d.sucursalOrigenNombre }}</span>
+                <span class="ruta-zona">{{ d.zonaOrigenNombre }}</span>
+              </div>
+              <div class="ruta-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                </svg>
+              </div>
+              <div class="ruta-punto ruta-punto--destino">
+                <span class="ruta-label">Destino</span>
+                <span class="ruta-nombre">{{ d.sucursalDestinoNombre }}</span>
+                <span class="ruta-zona">{{ d.zonaDestinoNombre }}</span>
+              </div>
+            </div>
+
+            <!-- Meta -->
+            <div class="card-meta">
+              <div class="meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25
+                      0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504
+                      1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504
+                      -1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+                </svg>
+                <span>{{ d.totalItems }} kit{{ d.totalItems !== 1 ? 's' : '' }}</span>
+              </div>
+              <div class="meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501
+                      20.118a7.5 7.5 0 0114.998 0"/>
+                </svg>
+                <span>{{ d.usuarioEnviaNombre }}</span>
+              </div>
+              <div class="meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25
+                      2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021
+                      18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+                </svg>
+                <span>{{ d.fechaDespacho | fechaLocal:'fecha' }}</span>
+              </div>
+              @if (d.guiaRemision) {
+                <div class="meta-item meta-item--guia">
+                  <span class="guia-label">Guía:</span>
+                  <span class="guia-valor">{{ d.guiaRemision }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Acción -->
+            @if (puedeConfirmar(d.estado)) {
+              <button class="btn-confirmar" (click)="irAConfirmar(d.id)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Confirmar recepción
+              </button>
+            } @else {
+              <button class="btn-ver" (click)="irAConfirmar(d.id)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638
+                      0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5
+                      12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Ver detalle
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+
+</div>
