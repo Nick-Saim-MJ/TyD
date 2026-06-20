@@ -5,6 +5,7 @@ import com.tyd.kitprepago.modulo_auth.dto.response.LoginResponse;
 import com.tyd.kitprepago.modulo_auth.dto.response.MeResponse;
 import com.tyd.kitprepago.modulo_auth.entity.Usuario;
 import com.tyd.kitprepago.modulo_auth.repository.UsuarioJpaRepository;
+import com.tyd.kitprepago.shared.exception.CuentaBloqueadaException;
 import com.tyd.kitprepago.shared.exception.RecursoNoEncontradoException;
 import com.tyd.kitprepago.shared.security.JwtService;
 import com.tyd.kitprepago.shared.security.Rol;
@@ -58,6 +59,10 @@ public class AuthService {
             // Credenciales incorrectas: registrar intento y relanzar
             userDetailsService.registrarIntentoFallido(request.username());
             throw ex; // GlobalExceptionHandler lo convierte en 401
+        } catch (CuentaBloqueadaException ex) {
+            // Cuenta bloqueada: relanzar para que GlobalExceptionHandler retorne 423
+            // No registramos intento fallido adicional porque ya está bloqueada
+            throw ex;
         }
 
         // Login exitoso
