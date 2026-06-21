@@ -35,6 +35,10 @@ export class VentasApiService {
     });
   }
 
+  getKitsDisponiblesPorZona(zonaId: number): Observable<ItemKitResponse[]> {
+    return this.http.get<ItemKitResponse[]>(`${this.base}/items-kit/zona/${zonaId}`);
+  }
+
   // ── Vendedores ────────────────────────────────────────────────────────────
 
   getVendedoresPorZona(zonaId: number): Observable<UsuarioVendedor[]> {

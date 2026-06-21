@@ -24,11 +24,11 @@ class LoteController {
 
     /**
      * POST /api/lotes
-     * Solo ADMIN. Registra el pedido a DirecTV.
+     * ADMIN, JEFE_ALMACEN, ALMACENERO y CONTADOR. Registra el pedido a DirecTV.
      * El payload puede incluir los kits del lote o registrarlos después.
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO','CONTADOR')")
     public ResponseEntity<LoteResponse> crear(
             @Valid @RequestBody CrearLoteRequest request,
             @AuthenticationPrincipal UsuarioPrincipal admin) {

@@ -26,8 +26,12 @@ public interface UsuarioJpaRepository extends JpaRepository<Usuario, Long> {
     /** Todos los usuarios de una zona — para el admin y los listados filtrados */
     List<Usuario> findByZona_IdAndDeletedAtIsNull(Long zonaId);
 
-    /** Vendedores y almaceneros de una zona para el autocomplete de ventas */
-    List<Usuario> findByZona_IdAndRolInAndActivoTrueAndDeletedAtIsNull(
+    /**
+     * Vendedores y almaceneros de una zona para el autocomplete de ventas.
+     * Excluye a los vendedores freelance (sucursal_id NULL) — ya no se ofrecen
+     * en el autocompletado, aunque el registro siga existiendo en la BD.
+     */
+    List<Usuario> findByZona_IdAndRolInAndActivoTrueAndDeletedAtIsNullAndSucursalIsNotNull(
             Long zonaId, List<Rol> roles);
 
     /** Todos los usuarios activos (solo ADMIN) */

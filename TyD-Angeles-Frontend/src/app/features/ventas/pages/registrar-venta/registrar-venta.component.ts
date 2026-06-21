@@ -12,6 +12,7 @@ import {
   ClienteResponse, CondicionVenta, CrearClienteInlineRequest,
   METODOS_PAGO, MetodoPago, TipoCliente
 } from '../../models/ventas.model';
+import { ItemKitResponse } from '../../../inventario/models/inventario.model';
 
 @Component({
   selector:        'app-registrar-venta',
@@ -69,6 +70,23 @@ export class RegistrarVentaComponent implements OnInit {
   readonly vendedorId        = signal<number | null>(null);
   readonly dropdownAbierto   = signal<boolean>(false);
 
+  // ── Selector de kits disponibles en la zona ──────────────────────────────
+  readonly busquedaKit      = signal<string>('');
+  readonly mostrarSelector  = signal<boolean>(false);
+
+  readonly kitsFiltrados = computed(() => {
+    const termino = this.busquedaKit().toLowerCase().trim();
+    const disponibles = this.store.kitsDisponibles();
+    if (!termino) return disponibles.slice(0, 50);
+    return disponibles.filter(kit =>
+      kit.serieMaestro?.toLowerCase().includes(termino) ||
+      kit.serieSim?.toLowerCase().includes(termino) ||
+      kit.serieDeco?.toLowerCase().includes(termino) ||
+      kit.productoNombre?.toLowerCase().includes(termino) ||
+      kit.modeloKitCodigo?.toLowerCase().includes(termino)
+    ).slice(0, 50);
+  });
+
   // ── Formulario de nuevo cliente (inline) ─────────────────────────────────
   readonly formNuevoCliente = this.fb.group({
     dni:         ['', [Validators.required, Validators.minLength(8)]],
@@ -103,7 +121,10 @@ export class RegistrarVentaComponent implements OnInit {
 
   ngOnInit(): void {
     const zonaId = this.zonaCtx.zonaId();
-    if (zonaId) this.store.cargarVendedores(zonaId);
+    if (zonaId) {
+      this.store.cargarVendedores(zonaId);
+      this.store.cargarKitsDisponibles(zonaId);
+    }
 
     const rol = this.zonaCtx.rol();
     const usuarioId = this.zonaCtx.usuarioId();
@@ -151,6 +172,20 @@ export class RegistrarVentaComponent implements OnInit {
       this.valorKit.set('');
       this.kitInput?.nativeElement.focus();
     }, 150);
+  }
+
+  // ── Selector de kits disponibles ─────────────────────────────────────────
+  toggleSelector(): void {
+    this.mostrarSelector.update(v => !v);
+  }
+
+  kitEstaSeleccionado(kitId: number): boolean {
+    return this.store.kitValidado()?.id === kitId;
+  }
+
+  elegirKitDeLista(kit: ItemKitResponse): void {
+    this.store.seleccionarKitDeLista(kit);
+    this.valorKit.set('');
   }
 
   // ── Autocomplete cliente ──────────────────────────────────────────────────

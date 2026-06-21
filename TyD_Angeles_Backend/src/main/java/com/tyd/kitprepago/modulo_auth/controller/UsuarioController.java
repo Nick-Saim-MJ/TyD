@@ -27,7 +27,7 @@ class UsuarioController {
      * Solo ADMIN. Retorna todos los usuarios, filtrados por zona si hay query param.
      */
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTADOR')")
     public ResponseEntity<List<UsuarioResponse>> listar() {
         return ResponseEntity.ok(usuarioService.listar());
     }
@@ -49,7 +49,7 @@ class UsuarioController {
      * Solo ADMIN. Crea un usuario y le asigna zona/sucursal.
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTADOR')")
     public ResponseEntity<UsuarioResponse> crear(
             @Valid @RequestBody CrearUsuarioRequest request,
             @AuthenticationPrincipal UsuarioPrincipal admin) {
@@ -62,7 +62,7 @@ class UsuarioController {
      * Solo ADMIN. Un usuario no puede cambiar su propio rol.
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTADOR')")
     public ResponseEntity<UsuarioResponse> editar(
             @PathVariable Long id,
             @Valid @RequestBody EditarUsuarioRequest request,
@@ -75,7 +75,7 @@ class UsuarioController {
      * Solo ADMIN. Soft delete — solo actualiza deleted_at.
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTADOR')")
     public ResponseEntity<UsuarioResponse> eliminar(
             @PathVariable Long id,
             @AuthenticationPrincipal UsuarioPrincipal admin) {

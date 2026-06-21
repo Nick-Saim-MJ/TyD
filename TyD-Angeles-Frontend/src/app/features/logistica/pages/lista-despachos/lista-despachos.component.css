@@ -14,6 +14,7 @@
   flex-wrap: wrap;
 }
 .page-header-left { display: flex; flex-direction: column; gap: .25rem; }
+.page-header-right { display: flex; align-items: center; gap: .625rem; flex-wrap: wrap; }
 
 .page-title {
   display: flex; align-items: center; gap: .625rem;
@@ -45,6 +46,13 @@
   box-shadow: 0 2px 8px rgba(249,115,22,.3);
 }
 .btn-primary:hover { box-shadow: 0 4px 14px rgba(249,115,22,.4); transform: translateY(-1px); }
+
+.btn-outline {
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  color: #374151;
+}
+.btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
 
 /* ── Tabs ─────────────────────────────────────────────────── */
 .tabs-bar {

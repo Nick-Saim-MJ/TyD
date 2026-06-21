@@ -66,48 +66,51 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // ── Módulo A: Org & Accesos ──────────────────────────
-                        // Solo ADMIN puede gestionar usuarios y sucursales
-                        .requestMatchers(HttpMethod.POST, "/api/usuarios/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT,  "/api/usuarios/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE,"/api/usuarios/**").hasRole("ADMIN")
+                        // ADMIN y CONTADOR gestionan usuarios y sucursales
+                        .requestMatchers(HttpMethod.POST, "/api/usuarios/**").hasAnyRole("ADMIN","CONTADOR")
+                        .requestMatchers(HttpMethod.PUT,  "/api/usuarios/**").hasAnyRole("ADMIN","CONTADOR")
+                        .requestMatchers(HttpMethod.DELETE,"/api/usuarios/**").hasAnyRole("ADMIN","CONTADOR")
                         // Cualquier autenticado puede ver lista de vendedores (para autocomplete)
                         .requestMatchers(HttpMethod.GET, "/api/usuarios/vendedores").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/usuarios/**").hasAnyRole("ADMIN","CONTADOR")
 
                         // ── Módulo B: Inventario ──────────────────────────────
-                        // ADMIN crea lotes, el resto solo lee
-                        .requestMatchers(HttpMethod.POST, "/api/lotes/**").hasRole("ADMIN")
+                        // ADMIN, JEFE_ALMACEN, ALMACENERO y CONTADOR crean lotes; el resto solo lee
+                        .requestMatchers(HttpMethod.POST, "/api/lotes/**")
+                        .hasAnyRole("ADMIN","JEFE_ALMACEN","ALMACENERO","CONTADOR")
                         .requestMatchers(HttpMethod.GET,  "/api/lotes/**").authenticated()
                         .requestMatchers(HttpMethod.GET,  "/api/items-kit/**").authenticated()
-                        // Solo ADMIN y JEFE_ALMACEN pueden cambiar estado de un kit
+                        // ADMIN, JEFE_ALMACEN y CONTADOR pueden cambiar estado de un kit
                         .requestMatchers(HttpMethod.PATCH, "/api/items-kit/*/estado")
-                        .hasAnyRole("ADMIN","JEFE_ALMACEN")
+                        .hasAnyRole("ADMIN","JEFE_ALMACEN","CONTADOR")
 
                         // ── Módulo C: Logística ───────────────────────────────
                         .requestMatchers(HttpMethod.POST, "/api/despachos", "/api/despachos/**")
-                        .hasAnyRole("ADMIN","JEFE_ALMACEN","ALMACENERO")
+                        .hasAnyRole("ADMIN","JEFE_ALMACEN","ALMACENERO","CONTADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/despachos/*/confirmar-recepcion")
-                        .hasAnyRole("ADMIN","JEFE_ALMACEN","ALMACENERO")
+                        .hasAnyRole("ADMIN","JEFE_ALMACEN","ALMACENERO","CONTADOR")
                         .requestMatchers(HttpMethod.GET, "/api/despachos/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/mis-recepciones").authenticated()
 
                         // ── Módulo D: Ventas ──────────────────────────────────
                         .requestMatchers(HttpMethod.POST, "/api/ventas")
-                        .hasAnyRole("ADMIN","JEFE_ALMACEN","ALMACENERO","VENDEDOR")
+                        .hasAnyRole("ADMIN","JEFE_ALMACEN","ALMACENERO","VENDEDOR","CONTADOR")
                         .requestMatchers(HttpMethod.POST, "/api/ventas/*/anular")
-                        .hasAnyRole("ADMIN","JEFE_ALMACEN")
+                        .hasAnyRole("ADMIN","JEFE_ALMACEN","CONTADOR")
                         .requestMatchers(HttpMethod.GET, "/api/ventas/**").authenticated()
                         .requestMatchers("/api/clientes/**").authenticated()
                         .requestMatchers("/api/liquidaciones/**").authenticated()
                         .requestMatchers("/api/activaciones/**").authenticated()
+                        .requestMatchers("/api/modelos-kit/**").authenticated()
 
                         // ── Módulo E: Reportes ────────────────────────────────
                         .requestMatchers("/api/reportes/**")
                         .hasAnyRole("ADMIN","JEFE_ALMACEN","CONTADOR")
                         .requestMatchers(HttpMethod.POST, "/api/kardex/**")
-                        .hasAnyRole("ADMIN","JEFE_ALMACEN")
+                        .hasAnyRole("ADMIN","JEFE_ALMACEN","CONTADOR")
                         .requestMatchers(HttpMethod.GET, "/api/kardex/**")
                         .hasAnyRole("ADMIN","JEFE_ALMACEN","CONTADOR")
-                        .requestMatchers("/api/audit/**").hasRole("ADMIN")
+                        .requestMatchers("/api/audit/**").hasAnyRole("ADMIN","CONTADOR")
 
                         // Cualquier otro endpoint requiere autenticación
                         .anyRequest().authenticated()

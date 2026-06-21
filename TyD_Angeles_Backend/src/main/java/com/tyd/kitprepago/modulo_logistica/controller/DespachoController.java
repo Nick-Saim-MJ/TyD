@@ -42,7 +42,7 @@ public class DespachoController {
      * Al finalizar: kits en estado TRANSITO, despacho EN_TRANSITO.
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO')")
+    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO','CONTADOR')")
     public ResponseEntity<DespachoResponse> crear(
             @Valid @RequestBody CrearDespachoRequest request,
             @AuthenticationPrincipal UsuarioPrincipal emisor) {
@@ -78,7 +78,7 @@ public class DespachoController {
      * Ordenados por fecha_despacho ASC (más antiguos primero).
      */
     @GetMapping("/pendientes-recepcion")
-    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO')")
+    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO','CONTADOR')")
     public ResponseEntity<List<DespachoResponse>> pendientesRecepcion(
             @AuthenticationPrincipal UsuarioPrincipal usuario) {
         return ResponseEntity.ok(despachoService.pendientesRecepcion(usuario));
@@ -100,7 +100,7 @@ public class DespachoController {
      * Retorna un resumen: cuántos OK, defectuosos y no recibidos.
      */
     @PutMapping("/{id}/confirmar-recepcion")
-    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO')")
+    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO','CONTADOR')")
     public ResponseEntity<ConfirmarRecepcionResponse> confirmarRecepcion(
             @PathVariable Long id,
             @Valid @RequestBody ConfirmarRecepcionRequest request,

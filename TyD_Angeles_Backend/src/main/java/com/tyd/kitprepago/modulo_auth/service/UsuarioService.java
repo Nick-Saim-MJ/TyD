@@ -69,7 +69,9 @@ public class UsuarioService {
                     zonaId, sucursalId, List.of(Rol.VENDEDOR, Rol.ALMACENERO, Rol.JEFE_ALMACEN)
             );
         } else {
-            vendedores = usuarioRepo.findByZona_IdAndRolInAndActivoTrueAndDeletedAtIsNull(
+            // Sin sucursalId no hay forma de distinguir vendedores normales de freelance
+            // (sucursal_id NULL) salvo excluyéndolos explícitamente aquí.
+            vendedores = usuarioRepo.findByZona_IdAndRolInAndActivoTrueAndDeletedAtIsNullAndSucursalIsNotNull(
                     zonaId, List.of(Rol.VENDEDOR, Rol.ALMACENERO, Rol.JEFE_ALMACEN)
             );
         }

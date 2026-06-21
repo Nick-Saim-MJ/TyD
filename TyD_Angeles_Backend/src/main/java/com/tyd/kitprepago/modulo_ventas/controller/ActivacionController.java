@@ -34,7 +34,7 @@ class ActivacionController {
      * Ordenadas por fecha_venta ASC (más antiguas primero).
      */
     @GetMapping("/pendientes")
-    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO')")
+    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO','CONTADOR')")
     public ResponseEntity<List<ActivacionResponse>> pendientes() {
         return ResponseEntity.ok(activacionService.listarPendientes());
     }
@@ -45,7 +45,7 @@ class ActivacionController {
      * Puede registrar monto_recarga_inicial si no se hizo al vender.
      */
     @PutMapping("/{id}/confirmar")
-    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO')")
+    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO','CONTADOR')")
     public ResponseEntity<ActivacionResponse> confirmar(
             @PathVariable Long id,
             @Valid @RequestBody ConfirmarActivacionRequest request,

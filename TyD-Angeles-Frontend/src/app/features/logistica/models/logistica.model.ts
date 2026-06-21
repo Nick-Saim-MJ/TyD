@@ -92,6 +92,36 @@ export interface KitEnCola {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// HISTORIAL DE CUSTODIA ("Mis recepciones")
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type TipoEventoHistorial =
+  | 'INGRESO' | 'TRASLADO' | 'ASIGNACION' | 'DEVOLUCION' | 'VENTA' | 'BAJA';
+
+export interface HistorialCustodioResponse {
+  id:                       number;
+  sucursalAnteriorNombre:   string | null;
+  sucursalNuevaNombre:      string | null;
+  custodioAnteriorNombre:   string | null;
+  custodioNuevoNombre:      string | null;
+  tipoEvento:               TipoEventoHistorial;
+  motivo:                   string | null;
+  referenciaId:             number | null;
+  referenciaTipo:           string | null;
+  registradoPorNombre:      string | null;
+  fechaEvento:              string;
+}
+
+export const LABEL_TIPO_EVENTO: Record<TipoEventoHistorial, string> = {
+  INGRESO:     'Ingreso',
+  TRASLADO:    'Traslado',
+  ASIGNACION:  'Asignación',
+  DEVOLUCION:  'Devolución',
+  VENTA:       'Venta',
+  BAJA:        'Baja',
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // SUCURSAL (para los selectores de origen/destino)
 // ─────────────────────────────────────────────────────────────────────────────
 

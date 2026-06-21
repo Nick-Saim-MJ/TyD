@@ -40,7 +40,7 @@ class KardexController {
      * Si está cerrado → 409 PeriodoCerradoException.
      */
     @PostMapping("/generar")
-    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN')")
+    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','CONTADOR')")
     public ResponseEntity<GenerarKardexResponse> generar(
             @RequestParam Long sucursalId,
             @RequestParam String periodo,
@@ -55,7 +55,7 @@ class KardexController {
      * El contador solo puede auditar kardex cerrados — datos congelados e inmutables.
      */
     @PostMapping("/{id}/cerrar")
-    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN')")
+    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','CONTADOR')")
     public ResponseEntity<KardexResponse> cerrar(@PathVariable Long id) {
         return ResponseEntity.ok(kardexService.cerrar(id));
     }
@@ -66,7 +66,7 @@ class KardexController {
      * Se registra en audit_log automáticamente vía @Auditable.
      */
     @PostMapping("/{id}/reabrir")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTADOR')")
     public ResponseEntity<KardexResponse> reabrir(@PathVariable Long id) {
         return ResponseEntity.ok(kardexService.reabrir(id));
     }

@@ -44,7 +44,7 @@ class LiquidacionController {
      * La columna `diferencia` la calcula MySQL automáticamente al aprobar.
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO','VENDEDOR')")
+    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO','VENDEDOR','CONTADOR')")
     public ResponseEntity<LiquidacionResponse> crear(
             @Valid @RequestBody CrearLiquidacionRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -58,7 +58,7 @@ class LiquidacionController {
      * La columna `diferencia` (= depositado - esperado) la calcula MySQL sola.
      */
     @PutMapping("/{id}/aprobar")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTADOR')")
     public ResponseEntity<LiquidacionResponse> aprobar(
             @PathVariable Long id,
             @Valid @RequestBody AprobarLiquidacionRequest request,

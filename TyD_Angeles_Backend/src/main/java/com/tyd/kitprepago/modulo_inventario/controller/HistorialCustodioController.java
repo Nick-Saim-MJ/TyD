@@ -39,7 +39,7 @@ class HistorialCustodioController {
      * y tipo_evento = INGRESO.
      */
     @GetMapping("/api/mis-recepciones")
-    @PreAuthorize("hasAnyRole('ALMACENERO','JEFE_ALMACEN','ADMIN')")
+    @PreAuthorize("hasAnyRole('ALMACENERO','JEFE_ALMACEN','ADMIN','CONTADOR')")
     public ResponseEntity<List<HistorialCustodioResponse>> misRecepciones(
             @AuthenticationPrincipal UsuarioPrincipal usuario) {
         return ResponseEntity.ok(historialService.misRecepciones(usuario));

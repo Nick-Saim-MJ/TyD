@@ -5,6 +5,7 @@ import { environment } from '../../../../environments/environment';
 import {
   ConfirmarRecepcionRequest, CrearDespachoRequest,
   DespachoDetalleResponse, DespachoResponse,
+  HistorialCustodioResponse,
   SucursalOpcion
 } from '../models/logistica.model';
 import { ItemKitResponse } from '../../inventario/models/inventario.model';
@@ -43,6 +44,12 @@ export class LogisticaApiService {
     return this.http.put(
       `${this.base}/despachos/${despachoId}/confirmar-recepcion`, req
     ) as any;
+  }
+
+  // ── Historial de recepciones propias ──────────────────────────────────────
+
+  getMisRecepciones(): Observable<HistorialCustodioResponse[]> {
+    return this.http.get<HistorialCustodioResponse[]>(`${this.base}/mis-recepciones`);
   }
 
   // ── Kits disponibles (para seleccionar al crear despacho) ────────────────

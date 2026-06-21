@@ -37,7 +37,7 @@ class ModeloKitController {
      * Solo ADMIN. Para registrar nuevos modelos (LH100, LH300, futuros).
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTADOR')")
     public ResponseEntity<ModeloKitResponse> crear(
             @Valid @RequestBody CrearModeloKitRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -49,7 +49,7 @@ class ModeloKitController {
      * Activa o desactiva un modelo. El frontend deja de mostrarlo en el selector.
      */
     @PatchMapping("/{id}/toggle")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTADOR')")
     public ResponseEntity<ModeloKitResponse> toggleActivo(@PathVariable Long id) {
         return ResponseEntity.ok(modeloKitService.toggleActivo(id));
     }
@@ -59,7 +59,7 @@ class ModeloKitController {
      * Solo ADMIN. Elimina un modelo si no tiene ítems asociados.
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTADOR')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         modeloKitService.eliminar(id);
         return ResponseEntity.noContent().build();

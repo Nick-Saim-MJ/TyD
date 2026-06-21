@@ -5,6 +5,7 @@ import com.tyd.kitprepago.modulo_auth.dto.response.LoginResponse;
 import com.tyd.kitprepago.modulo_auth.dto.response.MeResponse;
 import com.tyd.kitprepago.modulo_auth.entity.Usuario;
 import com.tyd.kitprepago.modulo_auth.repository.UsuarioJpaRepository;
+import com.tyd.kitprepago.shared.exception.CuentaBloqueadaException;
 import com.tyd.kitprepago.shared.exception.RecursoNoEncontradoException;
 import com.tyd.kitprepago.shared.security.JwtService;
 import com.tyd.kitprepago.shared.security.Rol;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,6 +60,16 @@ public class AuthService {
             // Credenciales incorrectas: registrar intento y relanzar
             userDetailsService.registrarIntentoFallido(request.username());
             throw ex; // GlobalExceptionHandler lo convierte en 401
+        } catch (InternalAuthenticationServiceException ex) {
+            // DaoAuthenticationProvider envuelve cualquier excepción lanzada por
+            // loadUserByUsername (salvo UsernameNotFoundException) dentro de
+            // InternalAuthenticationServiceException. Si la causa es una cuenta
+            // bloqueada, la desenvolvemos para que el GlobalExceptionHandler la
+            // maneje como 423 (con la fecha de desbloqueo) en lugar de un 500.
+            if (ex.getCause() instanceof CuentaBloqueadaException cbe) {
+                throw cbe;
+            }
+            throw ex;
         }
 
         // Login exitoso

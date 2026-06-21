@@ -12,6 +12,7 @@ import {
   KitValidado, RegistrarVentaRequest,
   UsuarioVendedor, VentaResponse
 } from './models/ventas.model';
+import { ItemKitResponse } from '../inventario/models/inventario.model';
 
 // ── Estado ────────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,11 @@ interface VentasState {
   // Vendedores por zona (selector del formulario)
   vendedores: UsuarioVendedor[];
 
+  // Kits disponibles en la zona (lista filtrable, además del escaneo)
+  kitsDisponibles: ItemKitResponse[];
+  cargandoKits:    boolean;
+  zonaKitsCargada: number | null;
+
   // Estado del registro
   guardando:  boolean;
   ventaExito: { ventaId: number; serieMaestro: string; cliente: string } | null;
@@ -51,6 +57,9 @@ const initialState: VentasState = {
   buscandoClientes:    false,
   clienteSeleccionado: null,
   vendedores:          [],
+  kitsDisponibles:     [],
+  cargandoKits:        false,
+  zonaKitsCargada:     null,
   guardando:           false,
   ventaExito:          null,
   error:               null,
@@ -168,6 +177,49 @@ export const VentasStore = signalStore(
     limpiarKit(): void {
       patchState(store, {
         estadoEscaneo: 'IDLE', kitValidado: null, errorEscaneo: null,
+      });
+    },
+
+    // ── Lista de kits disponibles por zona (alternativa al escaneo) ─────────
+
+    cargarKitsDisponibles: rxMethod<number>(
+      pipe(
+        tap(zonaId => {
+          if (store.zonaKitsCargada() === zonaId) return;
+          patchState(store, { cargandoKits: true });
+        }),
+        switchMap(zonaId =>
+          api.getKitsDisponiblesPorZona(zonaId).pipe(
+            tap({
+              next: kitsDisponibles => patchState(store, {
+                kitsDisponibles, cargandoKits: false, zonaKitsCargada: zonaId,
+              }),
+              error: () => {
+                patchState(store, { cargandoKits: false });
+                toastSvc.error('Error', 'No se pudieron cargar los kits disponibles');
+              }
+            }),
+            catchError(() => EMPTY)
+          )
+        )
+      )
+    ),
+
+    /** Selecciona un kit directamente desde la lista cargada (sin otra llamada HTTP). */
+    seleccionarKitDeLista(kit: ItemKitResponse): void {
+      patchState(store, {
+        estadoEscaneo: 'DISPONIBLE',
+        kitValidado: {
+          id:             kit.id,
+          serieMaestro:   kit.serieMaestro,
+          serieSim:       kit.serieSim,
+          serieDeco:      kit.serieDeco,
+          productoNombre: kit.productoNombre,
+          modeloCodigo:   kit.modeloKitCodigo,
+          estado:         kit.estado,
+          sucursalNombre: kit.sucursalActualNombre,
+        },
+        errorEscaneo: null,
       });
     },
 

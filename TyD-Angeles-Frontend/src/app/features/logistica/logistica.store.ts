@@ -9,6 +9,7 @@ import { ToastService } from '../../shared/services/toast.service';
 import {
   ConfirmarRecepcionRequest, CrearDespachoRequest,
   DespachoDetalleResponse, DespachoResponse,
+  HistorialCustodioResponse,
   KitEnCola, SucursalOpcion
 } from './models/logistica.model';
 import { ItemKitResponse } from '../inventario/models/inventario.model';
@@ -27,6 +28,9 @@ interface LogisticaState {
   guardando:         boolean;
   error:             string | null;
 
+  misRecepciones:        HistorialCustodioResponse[];
+  cargandoMisRecepciones: boolean;
+
   // ✅ Kits disponibles por ZONA (no por sucursal)
   kitsDisponibles:   ItemKitResponse[];
   cargandoKits:      boolean;
@@ -39,6 +43,7 @@ const initialState: LogisticaState = {
   kitsEnCola: [], escaneando: false, errorEscaneo: null,
   sucursales: [], guardando: false, error: null,
   kitsDisponibles: [], cargandoKits: false, zonaKitsCargada: null,
+  misRecepciones: [], cargandoMisRecepciones: false,
 };
 
 // ── Store ─────────────────────────────────────────────────────────────────────
@@ -85,6 +90,20 @@ export const LogisticaStore = signalStore(
           error: () => {
             patchState(store, { cargandoDetalle: false });
             toastSvc.error('Error', 'No se pudo cargar el despacho');
+          }
+        }),
+        catchError(() => EMPTY)
+      ))
+    )),
+
+    cargarMisRecepciones: rxMethod<void>(pipe(
+      tap(() => patchState(store, { cargandoMisRecepciones: true })),
+      switchMap(() => api.getMisRecepciones().pipe(
+        tap({
+          next: misRecepciones => patchState(store, { misRecepciones, cargandoMisRecepciones: false }),
+          error: (e: HttpErrorResponse) => {
+            patchState(store, { cargandoMisRecepciones: false });
+            toastSvc.error('Error', 'No se pudo cargar tu historial de recepciones');
           }
         }),
         catchError(() => EMPTY)

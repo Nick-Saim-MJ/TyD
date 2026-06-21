@@ -61,7 +61,7 @@ class ItemKitController {
      * VENDIDO y TRANSITO no están disponibles aquí — los manejan venta/despacho.
      */
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN')")
+    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','CONTADOR')")
     public ResponseEntity<ItemKitResponse> cambiarEstado(
             @PathVariable Long id,
             @Valid @RequestBody CambiarEstadoKitRequest request,

@@ -42,7 +42,7 @@ class ZonaController {
      * Solo ADMIN. Se usa raramente — solo al agregar una nueva región DirecTV.
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTADOR')")
     public ResponseEntity<ZonaResponse> crear(
             @Valid @RequestBody CrearZonaRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -54,7 +54,7 @@ class ZonaController {
      * Solo ADMIN.
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTADOR')")
     public ResponseEntity<ZonaResponse> editar(
             @PathVariable Long id,
             @Valid @RequestBody EditarZonaRequest request) {

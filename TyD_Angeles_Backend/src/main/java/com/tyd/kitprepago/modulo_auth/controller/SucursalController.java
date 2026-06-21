@@ -47,7 +47,7 @@ class SucursalController {
      * Solo ADMIN.
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','CONTADOR')")
     public ResponseEntity<SucursalResponse> crear(
             @Valid @RequestBody CrearSucursalRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)

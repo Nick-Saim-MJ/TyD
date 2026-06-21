@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/audit")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN','CONTADOR')")
 class AuditController {
 
     private final AuditService auditService;

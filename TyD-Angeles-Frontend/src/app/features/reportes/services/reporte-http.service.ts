@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 import {
   FiltrosVentas, FiltrosKardex,
   VentaReporte, KardexResumen, KardexDetalle,
@@ -12,24 +13,26 @@ import {
 @Injectable({ providedIn: 'root' })
 export class ReporteHttpService {
   private readonly http = inject(HttpClient);
-  private readonly base = '/api/reportes';
+  // URL absoluta al backend (igual que el resto de servicios), no depende del proxy del dev server
+  private readonly api  = environment.apiUrl;
+  private readonly base = `${environment.apiUrl}/reportes`;
 
   // ── Catálogos ─────────────────────────────────────────────────────────────
   getZonas(): Observable<ZonaOption[]> {
-    return this.http.get<ZonaOption[]>('/api/zonas');
+    return this.http.get<ZonaOption[]>(`${this.api}/zonas`);
   }
 
   getSucursales(zonaId?: number | null): Observable<SucursalOption[]> {
     let params = new HttpParams();
     if (zonaId) params = params.set('zonaId', zonaId);
-    return this.http.get<SucursalOption[]>('/api/sucursales', { params });
+    return this.http.get<SucursalOption[]>(`${this.api}/sucursales`, { params });
   }
 
   getVendedores(zonaId?: number | null, sucursalId?: number | null): Observable<VendedorOption[]> {
     let params = new HttpParams();
     if (zonaId)     params = params.set('zonaId', zonaId);
     if (sucursalId) params = params.set('sucursalId', sucursalId);
-    return this.http.get<any>('/api/usuarios/vendedores', { params }).pipe(
+    return this.http.get<any>(`${this.api}/usuarios/vendedores`, { params }).pipe(
       map(data => Array.isArray(data) ? data : [])
     );
   }
@@ -86,7 +89,7 @@ export class ReporteHttpService {
     if (filtros.sucursalId) params = params.set('sucursalId', filtros.sucursalId);
     if (filtros.periodo)    params = params.set('periodo', filtros.periodo);
 
-    return this.http.get<any[]>('/api/kardex', { params }).pipe(
+    return this.http.get<any[]>(`${this.api}/kardex`, { params }).pipe(
       map(data => data.map(item => this._mapearKardex(item)))  // ✅ Preserva el contexto
     );
   }
@@ -109,7 +112,7 @@ export class ReporteHttpService {
    * El backend espera el ID del kardex, no sucursalId+modeloKit+periodo
    */
   cerrarKardex(kardexId: number): Observable<void> {
-    return this.http.post<void>(`/api/kardex/${kardexId}/cerrar`, {});
+    return this.http.post<void>(`${this.api}/kardex/${kardexId}/cerrar`, {});
   }
 
   // ── Mappers ───────────────────────────────────────────────────────────────

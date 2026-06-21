@@ -43,7 +43,7 @@ class VentaController {
      * → GlobalExceptionHandler lo convierte en 409 CONFLICT.
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO','VENDEDOR')")
+    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','ALMACENERO','VENDEDOR','CONTADOR')")
     public ResponseEntity<RegistrarVentaResponse> registrar(
             @Valid @RequestBody RegistrarVentaRequest request,
             @AuthenticationPrincipal UsuarioPrincipal creador) {
@@ -78,7 +78,7 @@ class VentaController {
      * El UNIQUE item_kit_activo queda libre para una nueva venta del mismo kit.
      */
     @PostMapping("/{id}/anular")
-    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN')")
+    @PreAuthorize("hasAnyRole('ADMIN','JEFE_ALMACEN','CONTADOR')")
     public ResponseEntity<VentaResponse> anular(
             @PathVariable Long id,
             @Valid @RequestBody AnularVentaRequest request,

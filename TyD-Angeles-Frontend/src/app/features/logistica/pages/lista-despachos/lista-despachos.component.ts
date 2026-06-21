@@ -43,6 +43,10 @@ export class ListaDespachosComponent implements OnInit {
     this.router.navigate(['/logistica/nuevo']);
   }
 
+  irAMisRecepciones(): void {
+    this.router.navigate(['/logistica/mis-recepciones']);
+  }
+
   irAConfirmar(despachoId: number): void {
     this.router.navigate(['/logistica/despachos', despachoId]);
   }

@@ -27,4 +27,11 @@ export const LOGISTICA_ROUTES: Routes = [
       import('./pages/confirmar-recepcion/confirmar-recepcion.component')
         .then(m => m.ConfirmarRecepcionComponent),
   },
+  {
+    path: 'mis-recepciones',
+    title: 'Mis Recepciones',
+    loadComponent: () =>
+      import('./pages/mis-recepciones/mis-recepciones.component')
+        .then(m => m.MisRecepcionesComponent),
+  },
 ];

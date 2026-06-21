@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -66,6 +67,20 @@ public class GlobalExceptionHandler {
             DisabledException ex, HttpServletRequest req) {
         return error(HttpStatus.UNAUTHORIZED,
                 "Cuenta inactiva. Contacta al administrador", req, null);
+    }
+
+    /**
+     * DaoAuthenticationProvider envuelve las excepciones de loadUserByUsername
+     * (salvo UsernameNotFoundException) en InternalAuthenticationServiceException.
+     * Desenvolvemos para que una cuenta bloqueada llegue como 423 y no como 500.
+     */
+    @ExceptionHandler(InternalAuthenticationServiceException.class)
+    public ResponseEntity<ApiErrorResponse> handleInternalAuth(
+            InternalAuthenticationServiceException ex, HttpServletRequest req) {
+        if (ex.getCause() instanceof CuentaBloqueadaException cbe) {
+            return handleCuentaBloqueada(cbe, req);
+        }
+        return error(HttpStatus.UNAUTHORIZED, "Credenciales inválidas", req, null);
     }
 
     @ExceptionHandler(AccessDeniedException.class)

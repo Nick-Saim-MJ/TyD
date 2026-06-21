@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { pipe, switchMap, tap } from 'rxjs';
+import { pipe, switchMap, tap, catchError, EMPTY } from 'rxjs';
 import { AuthApiService } from '../../api/auth.api';
 import { TokenService } from '../../core/services/token.service';
 import {
@@ -86,17 +86,16 @@ export const AuthStore = signalStore(
 
                   router.navigate([RUTA_POR_ROL[res.rol] ?? '/']);
                 },
-
-                error: (err: HttpErrorResponse) => {
-                  if (err.status === 423) {
-                    const detalles = err.error?.detalles as { bloqueadoHasta?: string } | undefined;
-                    patchState(store, {
-                      cargando: false,
-                      error: err.error?.mensaje ?? 'Cuenta bloqueada.',
-                      bloqueadoHasta: detalles?.bloqueadoHasta ?? null,
-                    });
-                    return;
-                  }
+              }),
+              catchError((err: HttpErrorResponse) => {
+                if (err.status === 423) {
+                  const detalles = err.error?.detalles as { bloqueadoHasta?: string } | undefined;
+                  patchState(store, {
+                    cargando: false,
+                    error: err.error?.mensaje ?? 'Cuenta bloqueada.',
+                    bloqueadoHasta: detalles?.bloqueadoHasta ?? null,
+                  });
+                } else {
                   patchState(store, {
                     cargando: false,
                     error:
@@ -105,7 +104,8 @@ export const AuthStore = signalStore(
                         : 'Error de conexión. Intenta de nuevo.',
                     bloqueadoHasta: null,
                   });
-                },
+                }
+                return EMPTY;
               }),
             ),
           ),

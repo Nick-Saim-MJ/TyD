@@ -46,7 +46,68 @@
       <!-- ── PASO 1: Kit ──────────────────────────────────────────────── -->
       <section class="section-card">
         <div class="step-badge">1</div>
-        <h2 class="section-title">Kit a vender</h2>
+        <div class="kit-section-header">
+          <h2 class="section-title">Kit a vender</h2>
+          <button type="button" class="btn-toggle-selector" (click)="toggleSelector()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            {{ mostrarSelector() ? 'Ocultar lista' : 'Ver kits de mi zona' }}
+          </button>
+        </div>
+
+        <!-- Selector de kits disponibles en la zona (expandible) -->
+        @if (mostrarSelector()) {
+          <div class="kit-selector-card">
+            <div class="selector-header">
+              <input
+                type="text"
+                class="search-input"
+                placeholder="🔍 Buscar por serial o producto…"
+                [ngModel]="busquedaKit()"
+                (ngModelChange)="busquedaKit.set($event)"
+              />
+              @if (store.cargandoKits()) {
+                <span class="spinner-sm"></span>
+              }
+            </div>
+
+            @if (store.kitsDisponibles().length === 0 && !store.cargandoKits()) {
+              <p class="empty-state">
+                No hay kits disponibles en tu zona
+                @if (zonaCtx.zonaNombre()) { ({{ zonaCtx.zonaNombre() }}) }
+              </p>
+            } @else if (kitsFiltrados().length === 0 && busquedaKit()) {
+              <p class="empty-state">No se encontraron resultados para "{{ busquedaKit() }}"</p>
+            } @else {
+              <ul class="kit-selector-list">
+                @for (kit of kitsFiltrados(); track kit.id) {
+                  <li class="kit-selector-item" [class.disabled]="kitEstaSeleccionado(kit.id)">
+                    <div class="kit-info">
+                      <span class="kit-serial">{{ kit.serieMaestro }}</span>
+                      <span class="kit-product">{{ kit.productoNombre }}</span>
+                      @if (kit.modeloKitCodigo) { <span class="kit-model">· {{ kit.modeloKitCodigo }}</span> }
+                      @if (kit.serieSim) { <span class="kit-sim">SIM: {{ kit.serieSim }}</span> }
+                    </div>
+                    <button class="btn-add-kit" (click)="elegirKitDeLista(kit)" [disabled]="kitEstaSeleccionado(kit.id)">
+                      @if (kitEstaSeleccionado(kit.id)) {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Elegido
+                      } @else {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Elegir
+                      }
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
 
         <div class="scanner-row">
           <div class="scanner-wrap" [attr.data-estado]="store.estadoEscaneo()">

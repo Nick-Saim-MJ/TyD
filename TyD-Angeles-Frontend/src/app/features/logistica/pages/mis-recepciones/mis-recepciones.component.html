@@ -1,0 +1,74 @@
+<div class="page">
+
+  <!-- ══ CABECERA ════════════════════════════════════════════════════════ -->
+  <header class="page-header">
+    <div class="page-header-left">
+      <h1 class="page-title">
+        <span class="page-title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </span>
+        Mis Recepciones
+      </h1>
+      <p class="page-subtitle">Historial de kits que ingresaste al sistema</p>
+    </div>
+    <button class="btn btn-ghost" (click)="volver()">Volver</button>
+  </header>
+
+  <!-- ══ TABLA ════════════════════════════════════════════════════════════ -->
+  <div class="table-card">
+
+    @if (store.cargandoMisRecepciones()) {
+      <div class="empty-state">
+        <div class="spinner-lg"></div>
+        <p>Cargando tu historial...</p>
+      </div>
+    } @else if (!store.misRecepciones().length) {
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25
+              2.25 0 01-2.247-2.118L3.75 7.5M3.375 7.5h17.25c.621 0
+              1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621
+              0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+        </svg>
+        <p>Todavía no has registrado ninguna recepción</p>
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Sucursal</th>
+              <th>Motivo</th>
+              <th>N° Pedido / Referencia</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (h of store.misRecepciones(); track h.id) {
+              <tr class="table-row">
+                <td class="td-fecha">{{ h.fechaEvento | fechaLocal }}</td>
+                <td>
+                  <span class="zona-tag">{{ h.sucursalNuevaNombre ?? '—' }}</span>
+                </td>
+                <td class="text-muted">{{ h.motivo ?? '—' }}</td>
+                <td>
+                  @if (h.referenciaId) {
+                    <span class="code-badge">{{ h.referenciaTipo }} #{{ h.referenciaId }}</span>
+                  } @else {
+                    <span class="text-muted">—</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  </div>
+
+</div>
